@@ -85,7 +85,9 @@ export async function getDashboardData(startParam?: string | null, endParam?: st
              sum(coalesce(payment_amount,0))::float8 a, sum(coalesce(drv_tips,0))::float8 t,
              sum(coalesce(payment_processing_fee_amount,0))::float8 fee, 0::float8 ref
         FROM sem.sem_order_payments
-       WHERE payment_status = 'CAPTURED' AND order_business_date BETWEEN $1 AND $2
+       -- Toast's Payments summary counts gift cards, which settle as AUTHORIZED (not CAPTURED);
+       -- including AUTHORIZED makes payment count + tips tie exactly to the Toast report.
+       WHERE payment_status IN ('CAPTURED','AUTHORIZED') AND order_business_date BETWEEN $1 AND $2
        GROUP BY 1,2,3,4
       UNION ALL
       SELECT to_char(to_date(payment_refund_business_date::text,'YYYYMMDD'),'YYYY-MM-DD') d, store_location_id loc,

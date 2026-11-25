@@ -66,10 +66,19 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);font-size:12px;
 .dr-it.on{background:var(--accent);color:#fff}
 /*DR*/.dr-it{justify-content:flex-start;gap:8px}.dr-it span:first-child{white-space:nowrap}.dr-sub{font-size:9px;font-weight:500;color:var(--muted);white-space:nowrap}.dr-it.on .dr-sub{color:rgba(255,255,255,.8)}
 .dr-div{height:1px;background:var(--border);margin:4px 0}
-.dr-dates{padding:6px 8px;display:flex;flex-direction:column;gap:5px}
-.dr-dr{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
-.dr-dr input{flex:1;padding:4px 7px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;color:var(--text)}
-.dr-apply{width:100%;margin-top:3px;padding:5px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:11px;font-weight:700;font-family:inherit}
+.dr-dates{padding:8px;display:flex;flex-direction:column;gap:6px;border-radius:8px}
+.dr-dates.on{background:var(--as);box-shadow:inset 0 0 0 1px var(--accent)}
+.dr-dr{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.dr-dr input{flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-family:inherit;color:var(--text);background:var(--card);accent-color:var(--accent);color-scheme:light dark}
+.dr-dr input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--as)}
+.dr-apply{width:100%;margin-top:3px;padding:6px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer}
+.dr-apply:hover{background:var(--accent2)}
+/* Kutlerri-themed calendar header — always shows the active range */
+.dr-cur{display:flex;align-items:center;gap:8px;margin:2px 2px 6px;padding:8px 10px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.dr-cur-k{font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.dr-cur-v{font-size:12px;font-weight:700;white-space:nowrap}
+.dr-sec.on{color:var(--accent)}
+.dr-cur-tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:10px;background:var(--accent);color:#fff;font-size:8px;font-weight:800;letter-spacing:.04em;vertical-align:middle}
 .ovl{position:fixed;inset:0;z-index:150}
 .tabs-o{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:8px;overflow-x:auto;scrollbar-width:none}
 .tabs-o::-webkit-scrollbar{display:none}
@@ -278,7 +287,10 @@ tr.lr td:first-child{padding-left:74px;background:var(--s2)!important}
 .sb-kut img{height:14px;width:auto;display:block;opacity:.8}
 
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
-.main .sticky-bar{position:sticky;top:0;z-index:100;background:var(--bg);padding:12px 20px 8px}
+/* Only the slim filter bar stays pinned; the page title scrolls away so it never covers content. */
+.main .topwrap{padding:12px 20px 0}
+.main .topwrap>*{max-width:1600px;margin-left:auto;margin-right:auto}
+.main .sticky-bar{position:sticky;top:0;z-index:100;background:var(--bg);padding:6px 20px 8px;box-shadow:0 6px 10px -8px rgba(20,16,40,.18)}
 .main .sticky-bar>*,.main #tabbody>*,.main .banner{max-width:1600px;margin-left:auto;margin-right:auto}
 .main #tabbody{padding:4px 20px 24px}
 .main .banner{margin:0 auto 12px;max-width:1600px}

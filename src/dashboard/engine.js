@@ -130,7 +130,7 @@ var PAL=['#7c3aed','#9f7cef','#7cb9ef','#ef7ccf','#f5a623','#2ec4b6','#e11d48','
 var LOCC=['#ef4444','#10b981','#7c3aed','#f59e0b','#2563eb','#ec4899','#14b8a6','#8b5cf6','#f97316','#64748b'];
 var TABS=[['overview','Overview'],['itemmix','Item Mix'],['entreemix','Entree Mix'],['loccompare','Location Compare'],['chanmenu','Channels'],['payment','Payment Source'],['meoverall','Menu Engineering'],['attachment','Analytics']];
 /* which global filters apply per tab (item tabs: Toast Menu / Menu group / Location; modifier tabs: date + Dining Option, Sugar Land only) */
-var TF={overview:{ch:1,cat:1,loc:1},itemmix:{ch:1,cat:1,loc:1},entreemix:{ch:1,loc:1,nr:1},loccompare:{ch:1,cat:1},chanmenu:{ch:1,cat:1,loc:1},payment:{loc:1,date:1},meoverall:{loc:1},attachment:{ch:1,loc:1,nr:1}};
+var TF={overview:{ch:1,cat:1,loc:1},itemmix:{ch:1,cat:1,loc:1},entreemix:{ch:1,loc:1,nr:1},loccompare:{ch:1,cat:1,loc:1},chanmenu:{ch:1,cat:1,loc:1},payment:{loc:1,date:1},meoverall:{loc:1},attachment:{ch:1,loc:1,nr:1}};
 /* items that Toast lists under more than one menu group (e.g. Rice Bowl: BYO Bowl / Individual Bowls) are shown as “Item · Group” so every row ties to a Toast row */
 function iLabel(item,grp){return META.amb[item]?item+' · '+grp:item;}
 
@@ -270,9 +270,15 @@ function niceMax(v){var p=Math.pow(10,Math.floor(Math.log10(v))),m=v/p,s=[1,1.2,
 
 /* ───────── charts (inline SVG / CSS — no external libs) ───────── */
 function donut(parts,fv){
- var tot=sum(parts,function(p){return p.v;});if(!tot)return empty('No data');
- var Rr=80,C=2*Math.PI*Rr,off=0,segs='',tip=function(p){return esc(p.l+'||'+fv(p.v)+'||'+fP(p.v/tot)+' of total');};
- parts.forEach(function(p){var len=p.v/tot*C;segs+='<circle r="'+Rr+'" cx="100" cy="100" fill="none" stroke="'+p.c+'" stroke-width="34" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 100 100)" data-tip="'+tip(p)+'"></circle>';off+=len;});
+ /* Only positive slices can be drawn as an arc. A negative net slice (e.g. a channel
+    whose refunds exceed sales in a short period) would make stroke-dasharray negative and
+    corrupt the dashoffset of every following slice — the "spilled" ring. Drop non-positive
+    slices from the ring; surface them separately in the legend so the data isn't hidden. */
+ var drawn=(parts||[]).filter(function(p){return p&&p.v>0;}),hidden=(parts||[]).filter(function(p){return p&&p.v<=0;});
+ var tot=sum(drawn,function(p){return p.v;});if(!tot)return empty('No data');
+ var Rr=80,C=2*Math.PI*Rr,off=0,segs='',tip=function(p){return esc(p.l+'||'+fv(p.v)+'||'+(p.v>0?fP(p.v/tot)+' of total':'excluded from ring'));};
+ drawn.forEach(function(p){var len=Math.max(0,Math.min(C,p.v/tot*C));segs+='<circle r="'+Rr+'" cx="100" cy="100" fill="none" stroke="'+p.c+'" stroke-width="34" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 100 100)" data-tip="'+tip(p)+'"></circle>';off+=len;});
+ parts=drawn.concat(hidden);
  return '<div class="donut"><div class="dsv"><svg viewBox="0 0 200 200">'+segs+'</svg></div><div class="lgs">'+
   parts.map(function(p){return '<div class="lg" data-tip="'+tip(p)+'"><span class="sw" style="background:'+p.c+'"></span><span class="ln" style="color:'+p.c+'">'+esc(p.l)+'</span></div>';}).join('')+'</div></div>';
 }
@@ -975,8 +981,10 @@ function grpCheck(key,all,list){var groups=chanGroups(list,grpCat,CATG_ORDER),se
 function sumLbl(arr,all,unit){return arr.length===0?all:arr.length===1?arr[0]:arr.length+' '+unit;}
 function dateDropdown(){
  var dr=S.dr,opts=dateOptions(),row=function(o){return '<div class="dr-it'+(dr.id===o.id?' on':'')+'" data-a="dr" data-i="'+o.id+'"><span>'+esc(o.label)+'</span><span class="dr-sub">'+esc(o.text)+'</span></div>';};
- var body='<div class="dr-sec">Quick</div>'+opts.slice(0,4).map(row).join('')+'<div class="dr-div"></div><div class="dr-sec">'+(S.cal!=='month'&&FISCAL.length?'Fiscal periods (4-4-5, FY'+(fiscalOf(META.max||PERIOD.end)||{fy:''}).fy+')':'Calendar months')+'</div>'+opts.slice(4).map(row).join('')+'<div class="dr-div"></div><div class="dr-sec">Custom date range</div><div class="dr-dates"><div class="dr-dr">From <input type="date" data-a="cs" value="'+(S.custom.s||dr.start)+'"></div><div class="dr-dr">To <input type="date" data-a="ce" value="'+(S.custom.e||dr.end)+'"></div><button class="dr-apply" data-a="apply">Apply</button></div>';
- return dropdown('date',esc(dr.id==='custom'?dr.text:dr.label),190,body,300);
+ var customOn=dr.id==='custom';
+ var cur='<div class="dr-cur"><span class="dr-cur-k">Showing</span><span class="dr-cur-v">'+esc(dr.text||dr.label)+'</span></div>';
+ var body=cur+'<div class="dr-sec">Quick</div>'+opts.slice(0,4).map(row).join('')+'<div class="dr-div"></div><div class="dr-sec">'+(S.cal!=='month'&&FISCAL.length?'Fiscal periods (4-4-5, FY'+(fiscalOf(META.max||PERIOD.end)||{fy:''}).fy+')':'Calendar months')+'</div>'+opts.slice(4).map(row).join('')+'<div class="dr-div"></div><div class="dr-sec'+(customOn?' on':'')+'">Custom date range'+(customOn?' <span class="dr-cur-tag">active</span>':'')+'</div><div class="dr-dates'+(customOn?' on':'')+'"><div class="dr-dr">From <input type="date" data-a="dcs" min="'+esc(META.min||'')+'" max="'+esc(META.max||'')+'" value="'+(S.custom.s||dr.start)+'"></div><div class="dr-dr">To <input type="date" data-a="dce" min="'+esc(META.min||'')+'" max="'+esc(META.max||'')+'" value="'+(S.custom.e||dr.end)+'"></div><button class="dr-apply" data-a="apply">Apply range</button></div>';
+ return dropdown('date',esc(dr.text||dr.label),190,body,320);
 }
 function filterbar(){
  var t=TF[S.tab]||{},h='<div class="fb"><div class="fb-r"><span class="fb-lbl">Calendar</span><div class="tgl-g"><button class="tgl'+(S.cal!=='month'?' on':'')+'" data-a="cal" data-v="fiscal" title="4-4-5 fiscal periods">Fiscal</button><button class="tgl'+(S.cal==='month'?' on':'')+'" data-a="cal" data-v="month" title="Calendar months">Month</button></div><div class="fb-sep"></div><span class="fb-lbl">Date range</span>'+dateDropdown();
@@ -1029,7 +1037,7 @@ function render(){
  if(typeof TIP!=='undefined'&&TIP)TIP.style.display='none';
  var app=document.getElementById('app'),sy=window.scrollY,body,oldTs=app.querySelector('.tscroll'),ts0=oldTs?oldTs.scrollTop:0,tsTab=app.getAttribute('data-tab');
  try{body=(ITEMTABS[S.tab]&&DATA.items.length&&itemRange()!=='full')?itemRangeMsg():VIEWS[S.tab]();}catch(e){body=empty('Something went wrong rendering this tab: '+esc(e.message));if(window.console)console.error(e);}
- app.innerHTML='<div class="layout">'+sidebar()+'<div class="main"><div class="sticky-bar">'+topbar()+filterbar()+'</div>'+banner()+'<div id="tabbody">'+body+'</div></div></div>'+(S.open?'<div class="ovl" data-a="close"></div>':'');
+ app.innerHTML='<div class="layout">'+sidebar()+'<div class="main"><div class="topwrap">'+topbar()+'</div><div class="sticky-bar">'+filterbar()+'</div>'+banner()+'<div id="tabbody">'+body+'</div></div></div>'+(S.open?'<div class="ovl" data-a="close"></div>':'');
  if(S.open){var sb=app.querySelector('.sticky-bar');sb.style.zIndex=160;}
  window.scrollTo(0,sy);
  var nt=app.querySelector('.tscroll');if(nt&&tsTab===S.tab)nt.scrollTop=ts0;app.setAttribute('data-tab',S.tab);
@@ -1101,7 +1109,7 @@ document.addEventListener('change',function(e){
  var el=e.target;if(el.id==='file'){handleFiles(el.files);el.value='';return;}
  var a=el.dataset&&el.dataset.a;if(!a)return;
  if(a==='sel'){var k=el.dataset.k;if(k==='cat')S.cat=el.value;else S.t[k]=el.value;render();}
- if(a==='cs')S.custom.s=el.value;if(a==='ce')S.custom.e=el.value;
+ if(a==='dcs')S.custom.s=el.value;if(a==='dce')S.custom.e=el.value;
 });
 document.addEventListener('input',function(e){var el=e.target;if(el.dataset&&el.dataset.a==='q'){S.q[el.dataset.t]=el.value;S.focus=el.id;render();}});
 function csvItemMix(){

@@ -28,17 +28,35 @@ export default function GroupingEditor({
 }) {
   const [state, setState] = useState<Init>(initial);
   const [res, formAction, pending] = useActionState(action, undefined);
-  const listId = `sug-${title.replace(/\s+/g, "")}`;
+  const aListId = `sug-a-${title.replace(/\s+/g, "")}`;
+  const bListId = `sug-b-${title.replace(/\s+/g, "")}`;
 
   const set = (sk: string, v: string, field: "a" | "b", val: string) =>
     setState((s) => ({ ...s, [sk]: { ...s[sk], [v]: { ...(s[sk]?.[v] ?? { a: "", b: "" }), [field]: val } } }));
 
+  // Suggestions = the built-in presets + every custom name already entered anywhere
+  // in this editor, so a value you invent on one row becomes reusable on every row.
+  const collect = (field: "a" | "b") => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    const add = (x: string) => { const t = x.trim(); if (t && !seen.has(t.toLowerCase())) { seen.add(t.toLowerCase()); out.push(t); } };
+    if (field === "a") suggestions.forEach(add);
+    Object.values(state).forEach((rows) => Object.values(rows).forEach((e) => add(e[field])));
+    return out;
+  };
+  const aSuggest = collect("a");
+  const bSuggest = collect("b");
+
   return (
     <form action={formAction} style={card}>
       <h3 style={h3}>{title}</h3>
-      <p style={{ fontSize: 12, color: "var(--mu)", margin: "0 0 14px" }}>{note}</p>
+      <p style={{ fontSize: 12, color: "var(--mu)", margin: "0 0 6px" }}>{note}</p>
+      <p style={{ fontSize: 11.5, color: "var(--mu)", margin: "0 0 14px", fontStyle: "italic" }}>
+        Pick a suggestion <b>or type your own</b> — any new name you create here becomes a reusable option on every row below.
+      </p>
       <input type="hidden" name="data" value={JSON.stringify(state)} />
-      <datalist id={listId}>{suggestions.map((s) => <option key={s} value={s} />)}</datalist>
+      <datalist id={aListId}>{aSuggest.map((s) => <option key={s} value={s} />)}</datalist>
+      <datalist id={bListId}>{bSuggest.map((s) => <option key={s} value={s} />)}</datalist>
 
       {sections.map((sec) => (
         <div key={sec.key} style={{ marginBottom: 18 }}>
@@ -56,8 +74,8 @@ export default function GroupingEditor({
                   return (
                     <tr key={v} style={{ borderTop: "1px solid var(--ln)" }}>
                       <td style={{ ...td, maxWidth: 280, wordBreak: "break-word" }}>{v}</td>
-                      <td style={td}><input list={listId} value={e.a} onChange={(ev) => set(sec.key, v, "a", ev.target.value)} placeholder="(unmapped)" style={inp} /></td>
-                      <td style={td}><input value={e.b} onChange={(ev) => set(sec.key, v, "b", ev.target.value)} placeholder="optional" style={inp} /></td>
+                      <td style={td}><input list={aListId} value={e.a} onChange={(ev) => set(sec.key, v, "a", ev.target.value)} placeholder="type or pick…" style={inp} /></td>
+                      <td style={td}><input list={bListId} value={e.b} onChange={(ev) => set(sec.key, v, "b", ev.target.value)} placeholder="type or pick… (optional)" style={inp} /></td>
                     </tr>
                   );
                 })}
