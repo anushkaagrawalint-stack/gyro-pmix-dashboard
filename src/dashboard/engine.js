@@ -135,22 +135,30 @@ var TF={overview:{ch:1,cat:1,loc:1},itemmix:{ch:1,cat:1,loc:1},entreemix:{ch:1,l
 function iLabel(item,grp){return META.amb[item]?item+' · '+grp:item;}
 
 /* ───────── channel categories (Harsh's mapping of Toast menus / dining options) ───────── */
-var CHAN_ORDER=['In-store','App & Website','Delivery','Catering','3PD Catering','Other'];
+/* admin/owner grouping overrides (channel & category), from settings; empty = built-in mapping unchanged */
+var CFG=(payload&&payload.config)?payload.config:{};
+if(!CFG.channelByMenu)CFG.channelByMenu={};if(!CFG.channelByDining)CFG.channelByDining={};if(!CFG.categoryByGroup)CFG.categoryByGroup={};
+function cfgDistinct(map,field){var s={};Object.keys(map).forEach(function(k){var v=map[k]&&map[k][field];if(v)s[v]=1;});return Object.keys(s);}
+var CHAN_BASE=['In-store','App & Website','Delivery','Catering','3PD Catering'];
+var CHAN_ORDER=CHAN_BASE.concat(Array.from(new Set(cfgDistinct(CFG.channelByMenu,'channel').concat(cfgDistinct(CFG.channelByDining,'channel')))).filter(function(c){return CHAN_BASE.indexOf(c)<0&&c!=='Other';})).concat(['Other']);
 var CHAN_MENU={'NEW Dine In Menu':'In-store','NEW Online Menu':'App & Website','NEW 3RD Party Menu (BOGO)':'Delivery','NEW 3RD Party Menu':'Delivery','Gyro Republic - Catering Menu':'Catering','NEW Catering Menu':'Catering','NEW EZCATER Menu':'3PD Catering'};
 var CHAN_COLOR={'In-store':'#7c3aed','App & Website':'#7cb9ef','Delivery':'#ef7ccf','Catering':'#f5a623','3PD Catering':'#2ec4b6','Other':'#94a3b8'};
-function chanOf(menu){return CHAN_MENU[menu]||'Other';}
+function chanOf(menu){var o=CFG.channelByMenu[menu];return (o&&o.channel)||CHAN_MENU[menu]||'Other';}
+function subChanOf(menu){var o=CFG.channelByMenu[menu];return (o&&o.sub)||menu;}
 function chanColor(c){return CHAN_COLOR[c]||'#94a3b8';}
 function chanChip(c){return '<span class="chd"><i style="background:'+chanColor(c)+'"></i><b>'+esc(c)+'</b></span>';}
 /* dining options → the same categories */
-function dnChan(dn){var s=String(dn);if(/ez\s?cater/i.test(s))return '3PD Catering';if(/catering/i.test(s))return 'Catering';if(/doordash|uber|grubhub|deliverthat/i.test(s))return 'Delivery';if(/^app\b/i.test(s))return 'App & Website';if(/dine in|take out|phone/i.test(s))return 'In-store';return 'Other';}
+function dnChan(dn){var ov=CFG.channelByDining[dn];if(ov&&ov.channel)return ov.channel;var s=String(dn);if(/ez\s?cater/i.test(s))return '3PD Catering';if(/catering/i.test(s))return 'Catering';if(/doordash|uber|grubhub|deliverthat/i.test(s))return 'Delivery';if(/^app\b/i.test(s))return 'App & Website';if(/dine in|take out|phone/i.test(s))return 'In-store';return 'Other';}
 function chanGroups(list,fn,ord){var m={};list.forEach(function(x){var c=fn(x);(m[c]||(m[c]=[])).push(x);});return (ord||CHAN_ORDER).filter(function(c){return m[c];}).map(function(c){return {cat:c,items:m[c]};});}
 function chanTree(rows){var cats={};rows.forEach(function(r){var c=chanOf(r.menu),o=cats[c]||(cats[c]={cat:c,n:0,q:0,g:0,menus:{}});o.n+=r.n;o.q+=r.q;o.g+=r.g;var m=o.menus[r.menu]||(o.menus[r.menu]={menu:r.menu,n:0,q:0,g:0});m.n+=r.n;m.q+=r.q;m.g+=r.g;});
  return CHAN_ORDER.filter(function(c){return cats[c];}).map(function(c){var o=cats[c];o.menus=Object.keys(o.menus).map(function(k){return o.menus[k];}).sort(function(a,b){return b.n-a.n;});return o;});}
 /* menu groups → combined categories (Category filter) */
-var CATG_ORDER=['Bowls','Pita & Gyrito','Sides','Drinks','Desserts','Deals','Catering','Other'];
+var CATG_BASE=['Bowls','Pita & Gyrito','Sides','Drinks','Desserts','Deals','Catering'];
+var CATG_ORDER=CATG_BASE.concat(Array.from(new Set(cfgDistinct(CFG.categoryByGroup,'category'))).filter(function(c){return CATG_BASE.indexOf(c)<0&&c!=='Other';})).concat(['Other']);
 var CATG_MAP={'BYO Bowl':'Bowls','Individual Bowls':'Bowls','Bowls':'Bowls','Pita & Gyrito':'Pita & Gyrito','Sides & Extras':'Sides','Loaded Fries':'Sides','Drinks':'Drinks','Beverages':'Drinks','Dessert':'Desserts','Desserts':'Desserts','Deals':'Deals','Catering Packages':'Catering','Catering Menu':'Catering','NEW EZCATER Menu':'Catering','Group Tray':'Catering','A La Carte Sides':'Catering','A La Carte Protein Trays':'Catering'};
 var CATG_COLOR={'Bowls':'#7c3aed','Pita & Gyrito':'#f5a623','Sides':'#2ec4b6','Drinks':'#7cb9ef','Desserts':'#ef7ccf','Deals':'#e5484d','Catering':'#64748b','Other':'#94a3b8'};
-function grpCat(g){return CATG_MAP[g]||'Other';}
+function grpCat(g){var o=CFG.categoryByGroup[g];return (o&&o.category)||CATG_MAP[g]||'Other';}
+function subCatOf(g){var o=CFG.categoryByGroup[g];return (o&&o.sub)||g;}
 function grpColor(c){return CATG_COLOR[c]||'#94a3b8';}
 /* label for a channel / dining-option filter: whole categories show by name, partial ones by item */
 function chanDisp(c){return String(c);}
@@ -1005,6 +1013,7 @@ function sidebar(){
   '<div class="sb-brand"><img alt="Gyro Republic" src="'+GLOGO+'"><div><div class="bt">Gyro Republic</div><div class="bs">Product Mix</div></div></div>'+
   '<nav class="sb-nav">'+TABS.map(function(t){return '<button class="sb-item'+(S.tab===t[0]?' on':'')+'" data-a="tab" data-k="'+t[0]+'">'+navIcon(t[0])+'<span>'+t[1]+'</span></button>';}).join('')+'</nav>'+
   '<div class="sb-foot">'+
+   ((typeof window!=='undefined'&&window.__gyroCanAdmin)?'<a class="sb-item sb-admin" href="/admin" style="text-decoration:none;margin-bottom:8px"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="5" x2="13" y2="5"/><line x1="3" y1="11" x2="13" y2="11"/><circle cx="6" cy="5" r="1.8"/><circle cx="10" cy="11" r="1.8"/></svg><span>Admin settings</span></a>':'')+
    '<button class="sb-theme" data-a="theme" title="Switch light / dark">◐ <span>Theme</span></button>'+
    '<div class="sb-status"><span class="status-dot"></span>Live · Toast via Neon</div>'+
    '<div class="sb-kut"><span>Built by</span><img alt="Kutlerri" src="'+LOGO+'"></div>'+

@@ -1,5 +1,6 @@
 import { getDashboardData } from "@/lib/dashboardData";
 import { getCurrentUser } from "@/lib/auth";
+import { getOpenLocations, getGrouping } from "@/lib/settings";
 
 // Keep only rows belonging to the allowed locations. Managers get their granted
 // subset; admin/owner (allowed === null) get everything. Filtering happens on the
@@ -37,9 +38,12 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   try {
     const data = await getDashboardData(searchParams.get("start"), searchParams.get("end"));
-    // Managers are restricted to their granted locations; admin/owner see all.
-    const allowed = user.role === "manager" ? new Set(user.locations) : null;
-    return Response.json(filterByLocations(data, allowed), {
+    // Closed locations are excluded for everyone; managers are further limited to their granted set.
+    const open = await getOpenLocations();
+    const allowed = new Set(user.role === "manager" ? user.locations.filter((l) => open.includes(l)) : open);
+    const out = filterByLocations(data, allowed);
+    out.config = await getGrouping(); // admin/owner channel & category overrides
+    return Response.json(out, {
       headers: { "Cache-Control": "private, no-store" },
     });
   } catch (err) {

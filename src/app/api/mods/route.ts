@@ -1,5 +1,6 @@
 import { getModsData } from "@/lib/dashboardData";
 import { getCurrentUser } from "@/lib/auth";
+import { getOpenLocations } from "@/lib/settings";
 
 export const maxDuration = 60; // the mods query is heavy (~15-20s)
 
@@ -13,9 +14,10 @@ export async function GET(request: Request) {
   if (!start || !end) return Response.json({ error: "start and end are required" }, { status: 400 });
   try {
     const mods = await getModsData(start, end);
-    // Managers only see their granted locations.
-    if (user.role === "manager" && mods?.rows) {
-      const allowed = new Set(user.locations);
+    // Closed locations excluded for everyone; managers further limited to their granted set.
+    const open = await getOpenLocations();
+    const allowed = new Set(user.role === "manager" ? user.locations.filter((l) => open.includes(l)) : open);
+    if (mods?.rows) {
       const locs: string[] = mods.locs ?? [];
       mods.rows = mods.rows.filter((row: any) => allowed.has(locs[row[1]]));
     }

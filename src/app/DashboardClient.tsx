@@ -22,6 +22,8 @@ export default function DashboardClient({ user, canAdmin }: Props) {
         if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
         const { startDashboard } = await import("@/dashboard/engine");
         if (!alive) return;
+        // let the engine's sidebar show the Admin link for admin/owner
+        (window as unknown as { __gyroCanAdmin?: boolean }).__gyroCanAdmin = canAdmin;
         startDashboard(data);
         setStatus("ready");
       } catch (e) {
@@ -66,14 +68,6 @@ export default function DashboardClient({ user, canAdmin }: Props) {
           <div style={{ fontWeight: 700, color: "var(--ink)" }}>{user.name}</div>
           <div style={{ color: "var(--mu)", fontSize: 10.5 }}>{roleLabel}</div>
         </div>
-        {canAdmin && (
-          <a
-            href="/admin"
-            style={{ fontSize: 11.5, fontWeight: 600, color: "var(--ac)", textDecoration: "none", padding: "4px 8px", border: "1px solid var(--ln)", borderRadius: 7 }}
-          >
-            Admin
-          </a>
-        )}
         <form action={logout}>
           <button
             type="submit"

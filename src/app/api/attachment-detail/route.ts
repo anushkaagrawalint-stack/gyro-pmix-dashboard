@@ -1,5 +1,6 @@
 import { ATTACHMENT_DETAIL_COLUMNS, getAttachmentDetail } from "@/lib/attachmentDetail";
 import { getCurrentUser } from "@/lib/auth";
+import { getOpenLocations } from "@/lib/settings";
 
 // GET /api/attachment-detail?start=YYYY-MM-DD&end=YYYY-MM-DD[&modifiers=1][&format=csv]
 // One row per item selection (and modifier with modifiers=1) on every check that has a main item, with order id, check id, selection id and parent selection id.
@@ -12,11 +13,10 @@ export async function GET(request: Request) {
   const end = searchParams.get("end") ?? "";
   try {
     let rows = await getAttachmentDetail(start, end, searchParams.get("modifiers") === "1");
-    // Managers only see their granted locations.
-    if (user.role === "manager") {
-      const allowed = new Set(user.locations);
-      rows = rows.filter((r) => allowed.has(String(r.location)));
-    }
+    // Closed locations excluded for everyone; managers further limited to their granted set.
+    const open = await getOpenLocations();
+    const allowed = new Set(user.role === "manager" ? user.locations.filter((l) => open.includes(l)) : open);
+    rows = rows.filter((r) => allowed.has(String(r.location)));
     if (searchParams.get("format") === "csv") {
       const esc = (v: unknown) => (v === null || v === undefined ? "" : /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
       const csv = [ATTACHMENT_DETAIL_COLUMNS.join(","), ...rows.map((r) => ATTACHMENT_DETAIL_COLUMNS.map((c) => esc(r[c])).join(","))].join("\n");
