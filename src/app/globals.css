@@ -363,3 +363,33 @@ tr.lr td:first-child{padding-left:74px;background:var(--s2)!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme='light']) .k-light{display:none}:root:not([data-theme='light']) .k-dark{display:inline-block}}
 :root[data-theme='dark'] .k-light{display:none}
 :root[data-theme='dark'] .k-dark{display:inline-block}
+
+/* ───────── phone (≤640px): compact, professional tables & less clutter ───────── */
+@media(max-width:640px){
+ .main .topwrap{padding:10px 14px 0}
+ .main .sticky-bar{padding:6px 14px 8px}
+ .main #tabbody{padding:4px 14px calc(84px + env(safe-area-inset-bottom))}
+ .krow{gap:8px;margin-bottom:10px}
+ .kc{padding:9px 10px}
+ .kl{font-size:8.5px;margin-bottom:3px}
+ .kv{font-size:16px}
+ .kv-sm{font-size:12px}
+ .ks{font-size:9.5px}
+ .cc{padding:11px 12px;margin-bottom:10px}
+ .cc h3{font-size:9.5px}
+ .gr2,.gr22,.loc-grid{gap:8px}
+ /* tables: denser type/padding so more fits without feeling cramped */
+ .tw{margin-bottom:8px}
+ .th2{padding:8px 10px}
+ .th2 h3{font-size:9.5px}
+ .tscroll{max-height:calc(100dvh - 210px)}
+ .tscroll table{font-size:10px}
+ .tscroll thead th{font-size:8px;padding:5px 7px}
+ .tscroll tbody td{font-size:10px;padding:5px 7px}
+ .tscroll tfoot td{font-size:10px;padding:6px 7px}
+ .srch{max-width:130px}
+ /* pin the first (label) column so the row name stays visible while scrolling values */
+ .tscroll table:not(.imx) th:first-child,.tscroll table:not(.imx) td:first-child{position:sticky;left:0;z-index:1;background:var(--card);box-shadow:1px 0 0 var(--ln)}
+ .tscroll table:not(.imx) thead th:first-child{z-index:4;background:var(--s2)}
+ .tscroll table:not(.imx) tfoot td:first-child{background:var(--as)}
+}
