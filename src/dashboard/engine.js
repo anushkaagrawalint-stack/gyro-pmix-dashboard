@@ -1018,11 +1018,15 @@ var NAVICON={
  attachment:'<path d="M7 5 5 7a2.5 2.5 0 0 0 3.5 3.5L10 9"/><path d="M9 11l2-2a2.5 2.5 0 0 0-3.5-3.5L6 7"/>'};
 function navIcon(id){return '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(NAVICON[id]||'')+'</svg>';}
 function sidebar(){
+ var gu=(typeof window!=='undefined'&&window.__gyroUser)||null;
+ var signout='<form action="/api/auth/logout" method="post" class="sb-signout-f"><button type="submit" class="sb-item sb-signout"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2H3v12h3"/><path d="M10.5 11l3-3-3-3"/><line x1="13.5" y1="8" x2="6.5" y2="8"/></svg><span>Sign out</span></button></form>';
  return '<aside class="sidebar">'+
   '<div class="sb-brand"><img alt="Gyro Republic" src="'+GLOGO+'"><div><div class="bt">Gyro Republic</div><div class="bs">Product Mix</div></div></div>'+
   '<nav class="sb-nav">'+TABS.map(function(t){return '<button class="sb-item'+(S.tab===t[0]?' on':'')+'" data-a="tab" data-k="'+t[0]+'">'+navIcon(t[0])+'<span>'+t[1]+'</span></button>';}).join('')+'</nav>'+
   '<div class="sb-foot">'+
-   ((typeof window!=='undefined'&&window.__gyroCanAdmin)?'<a class="sb-item sb-admin" href="/admin" style="text-decoration:none;margin-bottom:8px"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="5" x2="13" y2="5"/><line x1="3" y1="11" x2="13" y2="11"/><circle cx="6" cy="5" r="1.8"/><circle cx="10" cy="11" r="1.8"/></svg><span>Admin settings</span></a>':'')+
+   (gu?'<div class="sb-user"><div class="sb-user-n">'+esc(gu.name||'')+'</div><div class="sb-user-r">'+esc(gu.role||'')+'</div></div>':'')+
+   ((typeof window!=='undefined'&&window.__gyroCanAdmin)?'<a class="sb-item sb-admin" href="/admin" style="text-decoration:none"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="5" x2="13" y2="5"/><line x1="3" y1="11" x2="13" y2="11"/><circle cx="6" cy="5" r="1.8"/><circle cx="10" cy="11" r="1.8"/></svg><span>Admin settings</span></a>':'')+
+   signout+
    '<button class="sb-theme" data-a="theme" title="Switch light / dark">◐ <span>Theme</span></button>'+
    '<div class="sb-status"><span class="status-dot"></span>Live · Toast via Neon</div>'+
    '<div class="sb-kut"><span>Built by</span><img alt="Kutlerri" src="'+LOGO+'"></div>'+
