@@ -128,7 +128,7 @@ var META={locs:[],menus:[],groups:[],dining:[],min:'',max:'',byo:{},amb:{}};
 var S={tab:'overview',cal:'fiscal',dr:null,ch:[],cat:[],loc:[],dn:[],real:false,open:null,sort:{},q:{},t:{},col:{},ie:{},em:{sel:{},col:{}},ce:{},custom:{s:'',e:''},hideBanner:false,focus:null};
 var PAL=['#7c3aed','#9f7cef','#7cb9ef','#ef7ccf','#f5a623','#2ec4b6','#e11d48','#94a3b8','#10b981','#2563eb'];
 var LOCC=['#ef4444','#10b981','#7c3aed','#f59e0b','#2563eb','#ec4899','#14b8a6','#8b5cf6','#f97316','#64748b'];
-var TABS=[['overview','Overview'],['itemmix','Item Mix'],['entreemix','Entree Mix'],['loccompare','Location Compare'],['chanmenu','Channels'],['payment','Payment Source'],['meoverall','Menu Engineering'],['attachment','Analytics']];
+var TABS=[['overview','Overview'],['itemmix','Item Mix'],['entreemix','Entree Mix'],['loccompare','Locations'],['chanmenu','Channels'],['payment','Payment Source'],['meoverall','Menu Engineering'],['attachment','Analytics']];
 /* which global filters apply per tab (item tabs: Toast Menu / Menu group / Location; modifier tabs: date + Dining Option, Sugar Land only) */
 var TF={overview:{ch:1,cat:1,loc:1},itemmix:{ch:1,cat:1,loc:1},entreemix:{ch:1,loc:1,nr:1},loccompare:{ch:1,cat:1,loc:1},chanmenu:{ch:1,cat:1,loc:1},payment:{loc:1,date:1},meoverall:{loc:1},attachment:{ch:1,loc:1,nr:1}};
 /* items that Toast lists under more than one menu group (e.g. Rice Bowl: BYO Bowl / Individual Bowls) are shown as “Item · Group” so every row ties to a Toast row */
@@ -565,7 +565,7 @@ function topItemsByLoc(rows,locs){
 }
 
 function vLoc(){
- var level=T('lcLevel','item'),lvlHead='<div class="lt-head" style="margin:0 2px 12px"><div style="display:flex;align-items:center;gap:12px"><h3 style="font-size:14px;font-weight:700;text-transform:none;letter-spacing:0">Location Compare</h3>'+tgl('lcLevel',[['item','Items'],['modifier','Modifiers']],level)+'</div></div>';
+ var level=T('lcLevel','item'),lvlHead='<div class="lt-head" style="margin:0 2px 12px"><div style="display:flex;align-items:center;gap:12px"><h3 style="font-size:14px;font-weight:700;text-transform:none;letter-spacing:0">Locations</h3>'+tgl('lcLevel',[['item','Items'],['modifier','Modifiers']],level)+'</div></div>';
  if(level==='modifier')return vLocMods(lvlHead);
  var F=eff('loccompare'),rows=getItems(F);if(!rows.length)return lvlHead+empty('No items match the selected filters.');
  var metric=T('lcMetric','rev'),val=function(a){return metric==='rev'?sum(a,function(r){return r.n;}):sum(a,function(r){return r.q;});},fv=metric==='rev'?f$:fN;
