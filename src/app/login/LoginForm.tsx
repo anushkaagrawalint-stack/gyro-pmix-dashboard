@@ -21,11 +21,11 @@ export default function LoginForm({ next }: { next: string }) {
           fontFamily: "var(--font-inter)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-          <span style={{ width: 10, height: 10, borderRadius: 3, background: "var(--ac)" }} />
-          <h1 style={{ fontSize: 17, fontWeight: 800, color: "var(--ink)", margin: 0 }}>Gyro Republic</h1>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/gyro-logo.webp" alt="Gyro Republic" style={{ height: 64, width: "auto" }} />
+          <p style={{ fontSize: 12.5, color: "var(--mu)", margin: "14px 0 0", textAlign: "center" }}>Product Mix · sign in to continue</p>
         </div>
-        <p style={{ fontSize: 12.5, color: "var(--mu)", margin: "0 0 20px" }}>Product Mix · sign in to continue</p>
 
         <input type="hidden" name="next" value={next} />
 
@@ -42,6 +42,14 @@ export default function LoginForm({ next }: { next: string }) {
         <button type="submit" disabled={pending} style={{ ...buttonStyle, opacity: pending ? 0.7 : 1 }}>
           {pending ? "Signing in…" : "Sign in"}
         </button>
+
+        <div style={{ marginTop: 22, paddingTop: 16, borderTop: "1px solid var(--ln)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <span style={{ fontSize: 11, color: "var(--mu)" }}>Powered by</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="k-light" src="/kutlerri-logo-dark.webp" alt="Kutlerri" style={{ height: 17, width: "auto" }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="k-dark" src="/kutlerri-logo.webp" alt="Kutlerri" style={{ height: 17, width: "auto" }} />
+        </div>
       </form>
     </div>
   );

@@ -346,3 +346,9 @@ tr.lr td:first-child{padding-left:74px;background:var(--s2)!important}
 .em-ddw .drw{display:block}
 .em-ddw .drb{width:100%;justify-content:space-between;height:32px}
 .em-tb .drb{height:30px}
+
+/* login: swap Kutlerri wordmark by theme (dark-text on light bg, white on dark bg) */
+.k-dark{display:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme='light']) .k-light{display:none}:root:not([data-theme='light']) .k-dark{display:inline-block}}
+:root[data-theme='dark'] .k-light{display:none}
+:root[data-theme='dark'] .k-dark{display:inline-block}
