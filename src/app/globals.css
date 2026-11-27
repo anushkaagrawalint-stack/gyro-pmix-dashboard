@@ -309,13 +309,14 @@ tr.lr td:first-child{padding-left:74px;background:var(--s2)!important}
 /* ───────── responsive: sidebar -> bottom tab bar on narrow screens ───────── */
 @media(max-width:860px){
  .layout{flex-direction:column}
- .sidebar{width:auto;flex:none;height:auto;position:sticky;bottom:0;top:auto;order:2;flex-direction:row;align-items:center;border-right:none;border-top:1px solid var(--sbln);overflow:visible}
+ /* always-visible bottom tab bar: fixed so it stays pinned regardless of scroll/content height */
+ .sidebar{width:auto;flex:none;height:auto;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:200;flex-direction:row;align-items:center;border-right:none;border-top:1px solid var(--sbln);background:var(--sb);overflow:visible;padding-bottom:env(safe-area-inset-bottom)}
  .sb-brand,.sb-foot{display:none}
  .sb-nav{flex-direction:row;overflow-x:auto;padding:6px 8px;gap:4px}
  .sb-item{flex-direction:column;gap:3px;padding:6px 10px;font-size:9.5px;font-weight:600}
  .sb-item span{white-space:nowrap}
- .main{order:1}
- .main #tabbody{padding-bottom:16px}
+ /* reserve room so the last content isn't hidden behind the fixed bar */
+ .main #tabbody{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 }
 
 /* ───────── collapsible main sidebar ───────── */

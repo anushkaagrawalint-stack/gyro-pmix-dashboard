@@ -399,6 +399,7 @@ function locTrendTable(cols,B,locs){var n=locs.length,sw=function(i){return '<sp
  return '<div class="tw" style="margin-top:12px"><div class="tscroll" style="max-height:none"><table><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td class="l">Total</td>'+tc+'<td><b>'+f$(gt)+'</b></td></tr></tfoot></table></div></div>';}
 function trendCard(F){
  var dr=S.dr,pB=trendBuckets('period'),multiPeriod=!!(pB&&pB.cols.length>1),mode=T('ovTrend','tot');
+ if(mode==='day')mode='tot';
  if(mode==='periodic'&&!multiPeriod)mode='tot';
  var gran=mode==='daily'?'day':mode==='periodic'?'period':'week';
  var B=gran==='period'?pB:trendBuckets(gran);
@@ -435,7 +436,7 @@ function trendCard(F){
   }
   body=leg+chart;
  }
- var opts=[['daily','Daily'],['tot','Weekly'],['day','Avg / day']];if(multiPeriod)opts.push(['periodic','Periodic']);opts.push(['loc','By location']);
+ var opts=[['daily','Daily'],['tot','Weekly']];if(multiPeriod)opts.push(['periodic','Periodic']);opts.push(['loc','By location']);
  var sel='<select class="fb-sel" data-a="sel" data-k="ovTrend">'+opts.map(function(o){return '<option value="'+o[0]+'"'+(mode===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>';
  var pw=S.cal==='month'?'Calendar week':'Fiscal week',pp=S.cal==='month'?'Month':'Fiscal period';
  var granName=mode==='daily'?'Daily · time-of-day uses order open time':mode==='periodic'?pp:mode==='loc'?pw+' · share by location':mode==='day'?pw+' · avg per day':pw;
@@ -593,10 +594,10 @@ function topModsByLoc(mrows,locs){
  var head='<div class="lt-head"><div style="display:flex;align-items:center;gap:12px"><h3 style="font-size:14px;font-weight:700;text-transform:none;letter-spacing:0">'+(tb==='top'?'Top':'Bottom')+' modifiers by location</h3>'+tgl('lcMTop',[['top','Top'],['bottom','Bottom']],tb)+'</div>'+tgl('lcMTM',[['pct','%'],['cnt','#']],mode)+'</div>';
  var cards=locs.map(function(l){
   var lr=mrows.filter(function(r){return r.loc===l;}),tp=sum(lr,function(r){return r.q;});
-  var items=Array.from(group(lr,function(r){return r.m+'||'+r.gn;})).map(function(e){return {name:e[1][0].m,grp:e[1][0].gn,q:sum(e[1],function(r){return r.q;}),rev:sum(e[1],function(r){return r.rev;})};}).filter(function(x){return x.q>0;});
+  var items=Array.from(group(lr,function(r){return r.m+'||'+r.gn;})).map(function(e){return {name:e[1][0].m,grp:e[1][0].gn,q:sum(e[1],function(r){return r.q;})};}).filter(function(x){return x.q>0;});
   items.sort(function(a,b){return (tb==='top'?b.q-a.q:a.q-b.q)||String(a.name).localeCompare(String(b.name));});
-  var body=items.slice(0,N).map(function(x,i){var pq=tp?x.q/tp:0;return '<tr data-tip="'+esc(x.name+'||'+l+' · '+x.grp+'||'+fN(x.q)+' picks ('+fP(pq,1)+' of location)||'+f$(x.rev)+' revenue')+'"><td class="rk">'+(i+1)+'</td><td class="nm">'+esc(x.name)+'</td><td class="b">'+(mode==='pct'?fP(pq,1):fN(x.q))+'</td><td>'+f$(x.rev)+'</td></tr>';}).join('');
-  return '<div class="lt-card"><div class="lt-t"><i style="background:'+locShade(l)+'"></i>'+esc(l)+'</div><table class="ltt"><thead><tr><th></th><th>Modifier</th><th>'+(mode==='pct'?'% Picks':'Picks')+'</th><th>Rev</th></tr></thead><tbody>'+body+'</tbody></table></div>';}).join('');
+  var body=items.slice(0,N).map(function(x,i){var pq=tp?x.q/tp:0;return '<tr data-tip="'+esc(x.name+'||'+l+' · '+x.grp+'||'+fN(x.q)+' picks ('+fP(pq,1)+' of location)')+'"><td class="rk">'+(i+1)+'</td><td class="nm">'+esc(x.name)+'</td><td class="b">'+(mode==='pct'?fP(pq,1):fN(x.q))+'</td></tr>';}).join('');
+  return '<div class="lt-card"><div class="lt-t"><i style="background:'+locShade(l)+'"></i>'+esc(l)+'</div><table class="ltt"><thead><tr><th></th><th>Modifier</th><th>'+(mode==='pct'?'% Picks':'Picks')+'</th></tr></thead><tbody>'+body+'</tbody></table></div>';}).join('');
  return head+'<div class="lt-grid">'+cards+'</div>';
 }
 /* Location Compare — modifier level: modifiers compared across locations */
@@ -610,7 +611,7 @@ function vLocMods(head){
  var grps=Array.from(new Set(mrows.map(function(r){return r.gn;}))).sort(),showAmt=T('lcMG','pct')==='amt';
  var gRows=grps.map(function(gnm){var o={grp:gnm};locs.forEach(function(l){var lr=byL.get(l);o[l]=val(lr.filter(function(r){return r.gn===gnm;}));o['t_'+l]=val(lr);});return o;});
  var gCols=[{k:'grp',l:'Modifier group',a:'l',w:180,f:function(r){return esc(r.grp);}}].concat(locs.map(function(l){return {k:l,l:'<span style="color:'+locShade(l)+'">'+esc(l)+'</span>',f:function(r){return showAmt?fv(r[l]):fP(r['t_'+l]?r[l]/r['t_'+l]:0);}};}));
- var gTbl=tbl('lcmg','Modifier group mix by location ('+(showAmt?(metric==='rev'?'USD':'picks'):'% of '+(metric==='rev'?'revenue':'picks'))+')',gCols,gRows,{extra:tgl('lcMG',[['pct','%'],['amt','Amount']],showAmt?'amt':'pct')});
+ var gTbl=tbl('lcmg','Modifier group mix by location ('+(showAmt?'qty':'% of qty')+')',gCols,gRows,{extra:tgl('lcMG',[['pct','%'],['amt','Qty']],showAmt?'amt':'pct')});
  var mods=Array.from(group(mrows,function(r){return r.m+'||'+r.gn;})).map(function(e){var o={mod:e[1][0].m,grp:e[1][0].gn},bl=group(e[1],function(r){return r.loc;});locs.forEach(function(l){o[l]=bl.has(l)?val(bl.get(l)):0;});o.avg=sum(locs,function(l){return o[l];})/locs.length;return o;});
  var mCols=[{k:'mod',l:'Modifier',a:'l',w:180,f:function(r){return esc(r.mod);}},{k:'grp',l:'Group',a:'l',w:140,f:function(r){return esc(r.grp);}}].concat(locs.map(function(l){return {k:l,l:'<span style="color:'+locShade(l)+'">'+esc(l)+'</span>',f:function(r){return r[l]?fv(r[l]):'—';}};})).concat([{k:'avg',l:'Avg / location',f:function(r){return '<b>'+fv(r.avg)+'</b>';}}]);
  var mTbl=tbl('lcmod','Modifier comparison · Picks',mCols,mods,{def:{k:'avg',d:'desc'},sfn:function(r){return r.mod+' '+r.grp;},max:300});
@@ -647,23 +648,23 @@ function vChannels(){
 function vChanMods(head){
  if(!ensureMods())return head+modsLoading();
  var mrows=getMods();if(!mrows.length)return head+empty('No modifier data for '+esc(S.dr.text)+' with the selected filters.');
- var metric=T('chMMetric','picks'),val=function(a){return metric==='rev'?sum(a,function(r){return r.rev;}):sum(a,function(r){return r.q;});},fv=metric==='rev'?f$:fN;
+ var metric='picks',val=function(a){return sum(a,function(r){return r.q;});},fv=fN;
  var locs=META.locs.filter(function(l){return mrows.some(function(r){return r.loc===l;});});
  var byC=group(mrows,function(r){return chanOf(r.menu);}),chans=CHAN_ORDER.filter(function(c){return byC.has(c);}),tq=sum(mrows,function(r){return r.q;});
- var cards='<div class="loc-grid">'+chans.map(function(c){var a=byC.get(c),picks=sum(a,function(r){return r.q;}),rev=sum(a,function(r){return r.rev;});return '<div class="kc" style="border-left-color:'+chanColor(c)+'"><div class="kl">'+esc(c)+'</div><div class="kv" style="font-size:19px">'+fN(picks)+'</div><div class="ks">picks · '+f$(rev)+' · '+fP(tq?picks/tq:0)+' mix</div></div>';}).join('')+'</div>';
+ var cards='<div class="loc-grid">'+chans.map(function(c){var a=byC.get(c),picks=sum(a,function(r){return r.q;});return '<div class="kc" style="border-left-color:'+chanColor(c)+'"><div class="kl">'+esc(c)+'</div><div class="kv" style="font-size:19px">'+fN(picks)+'</div><div class="ks">picks · '+fP(tq?picks/tq:0)+' mix</div></div>';}).join('')+'</div>';
  var clRows=chans.map(function(c){var cr=byC.get(c),bl=group(cr,function(r){return r.loc;});var o={chan:c,tot:val(cr)};locs.forEach(function(l){o[l]=bl.has(l)?val(bl.get(l)):0;});return o;});
  var clCols=[{k:'chan',l:'Channel',a:'l',w:160,f:function(r){return chanChip(r.chan);}},{k:'tot',l:'Total',f:function(r){return '<b>'+fv(r.tot)+'</b>';}}].concat(locs.map(function(l){return {k:l,l:esc(l),f:function(r){return r[l]?fv(r[l]):'—';}};}));
- var clTbl=tbl('chmloc','Channel × location ('+(metric==='rev'?'revenue':'picks')+')',clCols,clRows,{def:{k:'tot',d:'desc'},extra:tgl('chMMetric',[['picks','Picks'],['rev','Revenue']],metric)});
+ var clTbl=tbl('chmloc','Channel × location (picks)',clCols,clRows,{def:{k:'tot',d:'desc'}});
  var clData=locs.map(function(l){var lr=mrows.filter(function(r){return r.loc===l;}),totl=val(lr);return {l:l,vals:chans.map(function(c){return val(lr.filter(function(r){return chanOf(r.menu)===c;}));}),tips:chans.map(function(c){var v=val(lr.filter(function(r){return chanOf(r.menu)===c;}));return c+' · '+l+'||'+fv(v)+(totl?'||'+fP(v/totl,1)+' of location':'');})};});
  var clSeries=chans.map(function(c){return {color:chanColor(c),label:c};});
  var clLeg='<div class="tr-leg" style="flex-wrap:wrap">'+clSeries.map(function(se){return '<span class="chd" style="font-size:10.5px;margin-right:6px"><i style="background:'+se.color+'"></i>'+esc(se.label)+'</span>';}).join('')+'</div>';
- var clChart='<div class="cc"><div class="cc-h"><h3>Channel mix by location</h3>'+tgl('chMMetric',[['picks','Picks'],['rev','Revenue']],metric)+'</div>'+clLeg+columns(clData,fv,{w:1280,h:260,pl:66,series:clSeries,stacked:1})+'</div>';
+ var clChart='<div class="cc"><div class="cc-h"><h3>Channel mix by location</h3></div>'+clLeg+columns(clData,fv,{w:1280,h:260,pl:66,series:clSeries,stacked:1})+'</div>';
  var tb=T('chMTop','top');
  var per='<div class="lt-head"><div style="display:flex;align-items:center;gap:12px"><h3 style="font-size:14px;font-weight:700;text-transform:none;letter-spacing:0">'+(tb==='top'?'Top':'Bottom')+' modifiers by channel</h3>'+tgl('chMTop',[['top','Top'],['bottom','Bottom']],tb)+'</div></div><div class="gr22">'+chans.map(function(c){var cr=byC.get(c),it=Array.from(group(cr,function(r){return r.m+'||'+r.gn;})).map(function(e){return {l:e[1][0].m,v:sum(e[1],function(r){return r.q;}),c:chanColor(c)};}).filter(function(x){return x.v>0;}).sort(function(a,b){return (tb==='top'?b.v-a.v:a.v-b.v)||String(a.l).localeCompare(String(b.l));}).slice(0,8);
   return '<div class="cc" style="border-top:3px solid '+chanColor(c)+'"><h3>'+esc(c)+' · '+(tb==='top'?'top':'bottom')+' modifiers</h3>'+hbars(it,fN)+'</div>';}).join('')+'</div>';
  var mods=Array.from(group(mrows,function(r){return r.m+'||'+r.gn;})).map(function(e){var o={mod:e[1][0].m,grp:e[1][0].gn,total:val(e[1])};chans.forEach(function(c){o[c]=val(e[1].filter(function(r){return chanOf(r.menu)===c;}));});return o;});
  var mCols=[{k:'mod',l:'Modifier',a:'l',w:180,f:function(r){return esc(r.mod);}},{k:'grp',l:'Group',a:'l',w:130,f:function(r){return esc(r.grp);}},{k:'total',l:'Total',f:function(r){return '<b>'+fv(r.total)+'</b>';}}].concat(chans.map(function(c){return {k:c,l:'<span style="color:'+chanColor(c)+'">'+esc(c)+'</span>',f:function(r){return r[c]?fv(r[c]):'—';}};}));
- var mTbl=tbl('chmod','Modifier by channel ('+(metric==='rev'?'revenue':'picks')+')',mCols,mods,{def:{k:'total',d:'desc'},sfn:function(r){return r.mod+' '+r.grp;},max:300});
+ var mTbl=tbl('chmod','Modifier by channel (picks)',mCols,mods,{def:{k:'total',d:'desc'},sfn:function(r){return r.mod+' '+r.grp;},max:300});
  return head+cards+clChart+clTbl+per+mTbl;
 }
 
