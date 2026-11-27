@@ -851,12 +851,8 @@ function attItemMix(F){
   DATA.items.forEach(function(r){if(!r.d||r.d<pr.start||r.d>pr.end)return;if(groups.indexOf(r.grp)<0)return;if(F.loc.length&&F.loc.indexOf(r.loc)<0)return;if(F.ch.length&&F.ch.indexOf(r.menu)<0)return;if(F.cat.length&&F.cat.indexOf(r.grp)<0)return;if(!platOK(chanOf(r.menu)))return;pQ+=r.q;pR+=r.n;});
   }
  var kpis='<div class="krow k4">'+kpi('a','Total '+mt+' Qty',fN(totQ),'items only'+dBadge(totQ,pQ))+kpi('g','Total Revenue',f$(totR),'net revenue'+dBadge(totR,pR))+kpi('p','Top '+mt,top?esc(top.name):'—',top?fN(top.total)+' qty':'No data',null,true)+kpi('b','Distinct Items',fN(rows.length),'unique '+mt.toLowerCase()+' names in scope')+'</div>';
- var byGrp={};rows.forEach(function(o){var g=byGrp[o.grp]||(byGrp[o.grp]={grp:o.grp,qty:0,rev:0});g.qty+=o.total;g.rev+=o.rev;});
- var roll=Object.keys(byGrp).map(function(k){return byGrp[k];}).sort(function(a,b){return b.qty-a.qty;}).slice(0,4);
- var rollCards=roll.length?'<div class="krow k4">'+roll.map(function(g){return kpi('',esc(g.grp),fN(g.qty),fP(totQ?g.qty/totQ:0,1)+' of '+mt.toLowerCase()+'s · '+f$(g.rev));}).join('')+'</div>':'';
- var cols=[{k:'name',l:'Item',a:'l',w:200,f:function(r){return esc(r.name);}},{k:'total',l:'Qty',f:function(r){return '<b>'+fN(r.total)+'</b>';}},{k:'pct',l:'% of Qty',v:function(r){return totQ?r.total/totQ:0;},f:function(r){return fP(totQ?r.total/totQ:0,1);}},{k:'rev',l:'Revenue',f:function(r){return f$(r.rev);}},{k:'revPct',l:'% of Rev',v:function(r){return totR?r.rev/totR:0;},f:function(r){return fP(totR?r.rev/totR:0,1);}}];
- var sel='<select class="fb-sel" data-a="sel" data-k="mixType">'+['Entree','Drink','Side','Sweet'].map(function(t){return '<option value="'+t+'"'+(mt===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>'+tgl('attMixPlat',PLAT_LABELS,plat)+'<button class="btn" data-a="csvmix">Export CSV</button>';
- return '<h2 style="font-size:15px;font-weight:700;margin:22px 2px 2px">Item mix · items only</h2><div class="ks" style="margin:0 2px 10px">Each item’s quantity sold as a standalone item (modifiers excluded) — reacts to the filters above.</div>'+kpis+rollCards+tbl('attmix',mt+' mix by item',cols,rows,{def:{k:'total',d:'desc'},sfn:function(r){return r.name;},max:300,extra:sel});
+ var sel='<select class="fb-sel" data-a="sel" data-k="mixType">'+['Entree','Drink','Side','Sweet'].map(function(t){return '<option value="'+t+'"'+(mt===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>'+tgl('attMixPlat',PLAT_LABELS,plat);
+ return '<div class="lt-head" style="margin:16px 2px 10px"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h3 style="font-size:14px;font-weight:700;text-transform:none;letter-spacing:0">Item mix · items only</h3>'+sel+'</div></div>'+kpis;
 }
 function csvAttBreak(){
  var F=eff('attachment'),ci=getAtt('c',F),ii=getAtt('i',F),by=T('attBy','item');
