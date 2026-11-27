@@ -328,6 +328,11 @@ tr.lr td:first-child{padding-left:74px;background:var(--s2)!important}
  .sb-signout{flex-direction:column;gap:3px;padding:6px 10px;font-size:9.5px;width:auto;color:rgba(255,255,255,.85)}
  /* reserve room so the last content isn't hidden behind the fixed bar */
  .main #tabbody{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ /* mobile tables: scroll inside the card; header row + first (label) column stay pinned, the rest scrolls */
+ .tscroll{max-height:calc(100dvh - 200px);-webkit-overflow-scrolling:touch}
+ .tscroll table:not(.imx) th:first-child,.tscroll table:not(.imx) td:first-child{position:sticky;left:0;z-index:1;background:var(--card);box-shadow:1px 0 0 var(--ln)}
+ .tscroll table:not(.imx) thead th:first-child{z-index:5;background:var(--s2)}
+ .tscroll table:not(.imx) tfoot td:first-child{background:var(--as)}
 }
 
 /* ───────── collapsible main sidebar ───────── */
@@ -382,14 +387,9 @@ tr.lr td:first-child{padding-left:74px;background:var(--s2)!important}
  .tw{margin-bottom:8px}
  .th2{padding:8px 10px}
  .th2 h3{font-size:9.5px}
- .tscroll{max-height:calc(100dvh - 210px)}
  .tscroll table{font-size:10px}
  .tscroll thead th{font-size:8px;padding:5px 7px}
  .tscroll tbody td{font-size:10px;padding:5px 7px}
  .tscroll tfoot td{font-size:10px;padding:6px 7px}
  .srch{max-width:130px}
- /* pin the first (label) column so the row name stays visible while scrolling values */
- .tscroll table:not(.imx) th:first-child,.tscroll table:not(.imx) td:first-child{position:sticky;left:0;z-index:1;background:var(--card);box-shadow:1px 0 0 var(--ln)}
- .tscroll table:not(.imx) thead th:first-child{z-index:4;background:var(--s2)}
- .tscroll table:not(.imx) tfoot td:first-child{background:var(--as)}
 }
