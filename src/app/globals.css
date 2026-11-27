@@ -74,7 +74,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);font-size:12px;
 .dr-apply{width:100%;margin-top:3px;padding:6px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer}
 .dr-apply:hover{background:var(--accent2)}
 /* Kutlerri-themed calendar header — always shows the active range */
-.dr-cur{display:flex;align-items:center;gap:8px;margin:2px 2px 6px;padding:8px 10px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.dr-cur{display:flex;align-items:center;gap:8px;margin:2px 2px 6px;padding:8px 10px;border-radius:8px;background:#6d4bd0;color:#fff}
 .dr-cur-k{font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
 .dr-cur-v{font-size:12px;font-weight:700;white-space:nowrap}
 .dr-sec.on{color:var(--accent)}
@@ -194,7 +194,7 @@ tr.mr td{color:var(--ik2)}tr.mr td:first-child{background:var(--card)}
 .em-clear{border:1px solid var(--ln);background:var(--as);color:var(--accent);font-weight:700;font-size:11px;border-radius:8px;padding:4px 12px;font-family:inherit}
 .em-it.on .nm{color:var(--accent);font-weight:700}
 .emc{background:var(--card);border-radius:10px;box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
-.emc-h{background:linear-gradient(90deg,#6d35d8,#7c3aed);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.emc-h{background:#6d4bd0;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px}
 .emc-h .t{font-size:14px;font-weight:700}.emc-h .s{font-size:10.5px;opacity:.9;margin-top:2px}.emc-h .s b{font-weight:700}
 .emc-h .x{margin-left:auto;display:flex;gap:8px;align-items:center}
 .emc-h button{background:rgba(255,255,255,.2);border:none;color:#fff;width:24px;height:24px;border-radius:6px;font-size:12px}.emc-h button:hover{background:rgba(255,255,255,.32)}
@@ -355,7 +355,7 @@ tr.lr td:first-child{padding-left:74px;background:var(--s2)!important}
 
 /* Entree Mix: Overall (combined) card stands out from per-item cards */
 .emc-ovw{border:2px solid var(--ac)}
-.emc-h.emc-ov{background:linear-gradient(90deg,#3a2086,#5b2bc4)}
+.emc-h.emc-ov{background:#4c3a7a}
 
 /* Entree Mix: full-width sidebar dropdown + tidy toolbar dropdowns */
 .em-ddw{margin-bottom:6px}

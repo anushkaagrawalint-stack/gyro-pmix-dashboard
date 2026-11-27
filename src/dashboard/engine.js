@@ -196,7 +196,7 @@ function catDonut(rows){var b=catBreak(rows),net={};rows.forEach(function(r){var
 
 function chColor(c){var i=META.menus.indexOf(c);return PAL[(i<0?0:i)%PAL.length];}
 function locColor(l){var i=META.locs.indexOf(l);return LOCC[(i<0?0:i)%LOCC.length];}
-function locShade(l){var i=META.locs.indexOf(l);return purpleShade(i<0?0:i,Math.max(META.locs.length,1));}
+function locShade(l){return '#6d4bd0';}/* single tone for all locations (no shade ramp); bars/cards separated by labels + borders */
 function catColor(c,i){return PAL[i%PAL.length];}
 function isReal(r){return r.type!=='openItem'&&r.menu!=='Open items'&&!/\btest\b/i.test(r.item);} /* "Real Menu Items": drops Toast open items and test items */
 
@@ -953,7 +953,7 @@ function vAtt(){
  var cols=[{k:'name',l:by==='item'?'Main Item':by==='channel'?'Channel':by==='menu'?'Menu (Toast)':by==='overall'?'Scope':'Location',a:'l',w:210,f:function(r){return by==='channel'?chanChip(r.name):by==='menu'?chip(r.name):esc(r.name);}},{k:'n',l:'Main Checks',f:function(r){return fN(r.n);}},{k:'rd',l:'<span style="color:'+ATC.Drink+'">Drink %</span>',f:function(r){return fP(r.rd,1);},t:'Share of main checks with a drink'},{k:'rs',l:'<span style="color:'+ATC.Side+'">Side %</span>',f:function(r){return fP(r.rs,1);},t:'Share of main checks with a side'},{k:'rw',l:'<span style="color:'+ATC.Sweet+'">Sweet %</span>',f:function(r){return fP(r.rw,1);},t:'Share of main checks with a sweet'},{k:'ra',l:'Overall Rate',f:function(r){return rtag(r.ra);},t:'Every attached item ÷ main checks — a drink and a side on one check count twice (attached items per check); main excluded'}];
  var foot='<td>All main checks</td><td>'+fN(tot.n)+'</td><td>'+fP(tot.rd,1)+'</td><td>'+fP(tot.rs,1)+'</td><td>'+fP(tot.rw,1)+'</td><td>'+fP(tot.ra,1)+'</td>';
  var brkExtra=tgl('attBy',[['item','Item'],['channel','Channel'],['menu','Menu'],['loc','Location'],['overall','Overall']],by)+'<button class="btn" data-a="csvatt">Export CSV</button>';
- return nt+k+trend+charts+tbl('att','Attachment rate breakdown',cols,src,{def:{k:'n',d:'desc'},foot:(by==='item'||by==='overall')?'':foot,sfn:by==='item'?function(r){return r.name;}:null,max:300,extra:brkExtra})+attPivot(F)+attItemMix(F);
+ return nt+k+trend+charts+tbl('att','Attachment rate breakdown',cols,src,{def:{k:'n',d:'desc'},foot:(by==='item'||by==='overall')?'':foot,sfn:by==='item'?function(r){return r.name;}:null,max:300,extra:brkExtra})+attPivot(F);
 }
 
 function vAttPH(){
