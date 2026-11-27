@@ -141,7 +141,7 @@ var S={tab:'overview',cal:'fiscal',dr:null,ch:[],cat:[],loc:[],dn:[],real:false,
 /* monochrome palette — purple / grey / light, interleaved so neighbours differ (segregation also shown by borders) */
 var PAL=['#6d4bd0','#9b96a8','#9f7cef','#5b5566','#c3b0f2','#4c3a7a','#bdb8c8','#7a6fb0','#8b8694','#d8d4e0'];
 var LOCC=['#6d4bd0','#8b8694','#9f7cef','#5b5566','#c3b0f2','#aba6b5','#4c3a7a','#bdb8c8','#7a6fb0','#d8d4e0'];
-var TABS=[['overview','Overview'],['itemmix','Item Mix'],['entreemix','Entree Mix'],['loccompare','Locations'],['chanmenu','Channels'],['payment','Payment Source'],['meoverall','Menu Engineering'],['attachment','Analytics']];
+var TABS=[['overview','Overview'],['itemmix','Item Mix'],['entreemix','Entree Mix'],['loccompare','Locations'],['chanmenu','Channels'],['payment','Payment Source'],['meoverall','Menu Engineering'],['attachment','Attachment Analytics']];
 /* which global filters apply per tab (item tabs: Toast Menu / Menu group / Location; modifier tabs: date + Dining Option, Sugar Land only) */
 var TF={overview:{ch:1,cat:1,loc:1},itemmix:{ch:1,cat:1,loc:1},entreemix:{ch:1,loc:1,nr:1},loccompare:{ch:1,cat:1,loc:1},chanmenu:{ch:1,cat:1,loc:1},payment:{loc:1,date:1},meoverall:{loc:1},attachment:{ch:1,loc:1,nr:1}};
 /* items that Toast lists under more than one menu group (e.g. Rice Bowl: BYO Bowl / Individual Bowls) are shown as “Item · Group” so every row ties to a Toast row */
