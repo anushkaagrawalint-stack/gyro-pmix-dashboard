@@ -57,6 +57,18 @@ function ensureMods(){
  }).catch(function(){MODS_STATE='error';render();});
  return false;
 }
+/* is the tab currently on screen one that actually needs the modifier data? */
+function modsOnScreen(){return (S.tab==='chanmenu'&&T('chLevel','item')==='modifier')||(S.tab==='loccompare'&&T('lcLevel','item')==='modifier');}
+/* quietly warm the heavy modifier dataset in the background after the dashboard loads, so the
+   modifier tabs open instantly. Only re-renders if the user is already waiting on a modifier view. */
+function prefetchMods(){
+ if(MODS_STATE!=='none')return;
+ MODS_STATE='loading';var m=payload.meta;
+ fetch('/api/mods?start='+encodeURIComponent(m.start)+'&end='+encodeURIComponent(m.end)).then(function(r){return r.json();}).then(function(j){
+  if(j&&j.mods){DATA.mods=decodeMods(j.mods);computeAnchors();MODS_STATE='loaded';}else{MODS_STATE='error';}
+  if(modsOnScreen())render();
+ }).catch(function(){MODS_STATE='error';if(modsOnScreen())render();});
+}
 function modsLoading(){return MODS_STATE==='error'?'<div class="cc" style="text-align:center;padding:46px 20px"><div class="ks" style="font-size:13px;margin-bottom:10px">Could not load modifier data.</div><button class="btn" data-a="modsretry">Retry</button></div>':'<div class="cc" style="text-align:center;padding:46px 20px"><svg width="26" height="26" viewBox="0 0 24 24" style="display:block;margin:0 auto 12px"><circle cx="12" cy="12" r="9" fill="none" stroke="var(--s2)" stroke-width="3"/><path d="M12 3a9 9 0 0 1 9 9" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/></path></svg><div class="ks" style="font-size:13px">Loading modifier data…</div><div class="ks" style="font-size:11px;margin-top:3px">one-time for this date range · ~15–20s</div></div>';}
 /* Weekly net sales by location (supplied by Harsh; weeks = Sep 1–7, 8–14, 15–21, 22–30). Sums tie to the item-sheet net per location (Pearland: −$0.20). */
 var EMB_WEEKLY=null; /* weekly figures are computed from the daily item data (weeklyFromItems) */
@@ -1131,6 +1143,9 @@ document.addEventListener('mouseout',function(ev){var r=ev.relatedTarget;if(!r||
 /* ───────── init ───────── */
 loadEmbedded();
 render();
+/* once the first paint is done, quietly warm the heavy modifier data in the background so the
+   modifier tabs don't stall on first open (idle time, doesn't block interaction) */
+if(typeof window!=='undefined'){var warm=function(){prefetchMods();};if(window.requestIdleCallback)window.requestIdleCallback(warm,{timeout:4000});else setTimeout(warm,1500);}
 window.__gyro={getPays:getPays,S:S,DATA:DATA,META:META,ANCH:function(){return ANCH;},PNAME:function(){return PNAME;},modCtx:modCtx,render:render,loadEmbedded:loadEmbedded,handleFiles:handleFiles,aggI:aggI,getItems:getItems};
 
 }
