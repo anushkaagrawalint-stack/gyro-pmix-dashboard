@@ -126,8 +126,9 @@ var DATA={items:[],mods:[],pays:[],att:{c:[],i:[],x:[],roles:{}},weekly:null,emb
 var ANCH={},PNAME={}; /* anchor option group per modifier parent; parent → Toast item-sheet name */
 var META={locs:[],menus:[],groups:[],dining:[],min:'',max:'',byo:{},amb:{}};
 var S={tab:'overview',cal:'fiscal',dr:null,ch:[],cat:[],loc:[],dn:[],real:false,open:null,sort:{},q:{},t:{},col:{},ie:{},em:{sel:{},col:{}},ce:{},custom:{s:'',e:''},hideBanner:false,focus:null};
-var PAL=['#7c3aed','#9f7cef','#7cb9ef','#ef7ccf','#f5a623','#2ec4b6','#e11d48','#94a3b8','#10b981','#2563eb'];
-var LOCC=['#ef4444','#10b981','#7c3aed','#f59e0b','#2563eb','#ec4899','#14b8a6','#8b5cf6','#f97316','#64748b'];
+/* monochrome palette — purple / grey / light, interleaved so neighbours differ (segregation also shown by borders) */
+var PAL=['#6d4bd0','#9b96a8','#9f7cef','#5b5566','#c3b0f2','#4c3a7a','#bdb8c8','#7a6fb0','#8b8694','#d8d4e0'];
+var LOCC=['#6d4bd0','#8b8694','#9f7cef','#5b5566','#c3b0f2','#aba6b5','#4c3a7a','#bdb8c8','#7a6fb0','#d8d4e0'];
 var TABS=[['overview','Overview'],['itemmix','Item Mix'],['entreemix','Entree Mix'],['loccompare','Locations'],['chanmenu','Channels'],['payment','Payment Source'],['meoverall','Menu Engineering'],['attachment','Analytics']];
 /* which global filters apply per tab (item tabs: Toast Menu / Menu group / Location; modifier tabs: date + Dining Option, Sugar Land only) */
 var TF={overview:{ch:1,cat:1,loc:1},itemmix:{ch:1,cat:1,loc:1},entreemix:{ch:1,loc:1,nr:1},loccompare:{ch:1,cat:1,loc:1},chanmenu:{ch:1,cat:1,loc:1},payment:{loc:1,date:1},meoverall:{loc:1},attachment:{ch:1,loc:1,nr:1}};
@@ -142,10 +143,10 @@ function cfgDistinct(map,field){var s={};Object.keys(map).forEach(function(k){va
 var CHAN_BASE=['In-store','App & Website','Delivery','Catering','3PD Catering'];
 var CHAN_ORDER=CHAN_BASE.concat(Array.from(new Set(cfgDistinct(CFG.channelByMenu,'channel').concat(cfgDistinct(CFG.channelByDining,'channel')))).filter(function(c){return CHAN_BASE.indexOf(c)<0&&c!=='Other';})).concat(['Other']);
 var CHAN_MENU={'NEW Dine In Menu':'In-store','NEW Online Menu':'App & Website','NEW 3RD Party Menu (BOGO)':'Delivery','NEW 3RD Party Menu':'Delivery','Gyro Republic - Catering Menu':'Catering','NEW Catering Menu':'Catering','NEW EZCATER Menu':'3PD Catering'};
-var CHAN_COLOR={'In-store':'#7c3aed','App & Website':'#7cb9ef','Delivery':'#ef7ccf','Catering':'#f5a623','3PD Catering':'#2ec4b6','Other':'#94a3b8'};
+var CHAN_COLOR={'In-store':'#6d4bd0','App & Website':'#9f7cef','Delivery':'#8b8694','Catering':'#c3b0f2','3PD Catering':'#5b5566','Other':'#aba6b5'};
 function chanOf(menu){var o=CFG.channelByMenu[menu];return (o&&o.channel)||CHAN_MENU[menu]||'Other';}
 function subChanOf(menu){var o=CFG.channelByMenu[menu];return (o&&o.sub)||menu;}
-function chanColor(c){return CHAN_COLOR[c]||'#94a3b8';}
+function chanColor(c){return CHAN_COLOR[c]||'#8b8694';}
 function chanChip(c){return '<span class="chd"><i style="background:'+chanColor(c)+'"></i><b>'+esc(c)+'</b></span>';}
 /* dining options → the same categories */
 function dnChan(dn){var ov=CFG.channelByDining[dn];if(ov&&ov.channel)return ov.channel;var s=String(dn);if(/ez\s?cater/i.test(s))return '3PD Catering';if(/catering/i.test(s))return 'Catering';if(/doordash|uber|grubhub|deliverthat/i.test(s))return 'Delivery';if(/^app\b/i.test(s))return 'App & Website';if(/dine in|take out|phone/i.test(s))return 'In-store';return 'Other';}
@@ -156,10 +157,10 @@ function chanTree(rows){var cats={};rows.forEach(function(r){var c=chanOf(r.menu
 var CATG_BASE=['Bowls','Pita & Gyrito','Sides','Drinks','Desserts','Deals','Catering'];
 var CATG_ORDER=CATG_BASE.concat(Array.from(new Set(cfgDistinct(CFG.categoryByGroup,'category'))).filter(function(c){return CATG_BASE.indexOf(c)<0&&c!=='Other';})).concat(['Other']);
 var CATG_MAP={'BYO Bowl':'Bowls','Individual Bowls':'Bowls','Bowls':'Bowls','Pita & Gyrito':'Pita & Gyrito','Sides & Extras':'Sides','Loaded Fries':'Sides','Drinks':'Drinks','Beverages':'Drinks','Dessert':'Desserts','Desserts':'Desserts','Deals':'Deals','Catering Packages':'Catering','Catering Menu':'Catering','NEW EZCATER Menu':'Catering','Group Tray':'Catering','A La Carte Sides':'Catering','A La Carte Protein Trays':'Catering'};
-var CATG_COLOR={'Bowls':'#7c3aed','Pita & Gyrito':'#f5a623','Sides':'#2ec4b6','Drinks':'#7cb9ef','Desserts':'#ef7ccf','Deals':'#e5484d','Catering':'#64748b','Other':'#94a3b8'};
+var CATG_COLOR={'Bowls':'#6d4bd0','Pita & Gyrito':'#9f7cef','Sides':'#8b8694','Drinks':'#c3b0f2','Desserts':'#6f6a7e','Deals':'#4c3a7a','Catering':'#aba6b5','Other':'#bdb8c8'};
 function grpCat(g){var o=CFG.categoryByGroup[g];return (o&&o.category)||CATG_MAP[g]||'Other';}
 function subCatOf(g){var o=CFG.categoryByGroup[g];return (o&&o.sub)||g;}
-function grpColor(c){return CATG_COLOR[c]||'#94a3b8';}
+function grpColor(c){return CATG_COLOR[c]||'#8b8694';}
 /* label for a channel / dining-option filter: whole categories show by name, partial ones by item */
 function chanDisp(c){return String(c);}
 function chanLabel(key,sel,all,unit){if(!sel.length)return all;var list=key==='ch'?META.menus:key==='cat'?META.groups:META.dining,fn=key==='ch'?chanOf:key==='cat'?grpCat:dnChan,parts=[];
@@ -277,7 +278,8 @@ function donut(parts,fv){
  var drawn=(parts||[]).filter(function(p){return p&&p.v>0;}),hidden=(parts||[]).filter(function(p){return p&&p.v<=0;});
  var tot=sum(drawn,function(p){return p.v;});if(!tot)return empty('No data');
  var Rr=80,C=2*Math.PI*Rr,off=0,segs='',tip=function(p){return esc(p.l+'||'+fv(p.v)+'||'+(p.v>0?fP(p.v/tot)+' of total':'excluded from ring'));};
- drawn.forEach(function(p){var len=Math.max(0,Math.min(C,p.v/tot*C));segs+='<circle r="'+Rr+'" cx="100" cy="100" fill="none" stroke="'+p.c+'" stroke-width="34" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 100 100)" data-tip="'+tip(p)+'"></circle>';off+=len;});
+ var gap=(drawn.length>1)?2:0;/* monochrome palette: separate slices with a thin gap (shows the card behind) */
+ drawn.forEach(function(p){var len=Math.max(0,Math.min(C,p.v/tot*C)),dl=Math.max(0,len-gap);segs+='<circle r="'+Rr+'" cx="100" cy="100" fill="none" stroke="'+p.c+'" stroke-width="34" stroke-dasharray="'+dl.toFixed(2)+' '+(C-dl).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 100 100)" data-tip="'+tip(p)+'"></circle>';off+=len;});
  parts=drawn.concat(hidden);
  return '<div class="donut"><div class="dsv"><svg viewBox="0 0 200 200">'+segs+'</svg></div><div class="lgs">'+
   parts.map(function(p){return '<div class="lg" data-tip="'+tip(p)+'"><span class="sw" style="background:'+p.c+'"></span><span class="ln" style="color:'+p.c+'">'+esc(p.l)+'</span></div>';}).join('')+'</div></div>';
@@ -303,19 +305,19 @@ function columns(items,fv,opt){
  if(stacked){
   items.forEach(function(it,i){var x=pl+iw*i+(iw-bw)/2,acc=0;
    series.forEach(function(se,si){var v=it.vals[si]||0;if(v<=0)return;var h=ph*(v/max),y=H-pb-acc-h;acc+=h;
-    svg+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+se.color+'" data-tip="'+esc((it.tips&&it.tips[si])||it.l)+'"></rect>';});
+    svg+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+se.color+'" stroke="var(--card)" stroke-width="1.25" data-tip="'+esc((it.tips&&it.tips[si])||it.l)+'"></rect>';});
    if(i%lblEvery===0){svg+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-pb+15)+'" text-anchor="middle" font-size="10" fill="#4b5563">'+esc(it.l)+'</text>';if(opt.sub&&it.s)svg+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-pb+28)+'" text-anchor="middle" font-size="9" fill="#9ca3af">'+esc(it.s)+'</text>';}});
  } else if(series){
   items.forEach(function(it,i){var x0=pl+iw*i+(iw-groupW)/2;
    series.forEach(function(se,si){var v=(it.vals[si]||0),h=ph*(v/max),x=x0+si*(bw+bgap),y=H-pb-h;
-    svg+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,0).toFixed(1)+'" rx="2.5" fill="'+se.color+'" data-tip="'+esc((it.tips&&it.tips[si])||it.l)+'"></rect>';});
+    svg+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,0).toFixed(1)+'" rx="2.5" fill="'+se.color+'" stroke="var(--card)" stroke-width="1" data-tip="'+esc((it.tips&&it.tips[si])||it.l)+'"></rect>';});
    if(i%lblEvery===0){svg+='<text x="'+(x0+groupW/2).toFixed(1)+'" y="'+(H-pb+15)+'" text-anchor="middle" font-size="10" fill="#4b5563">'+esc(it.l)+'</text>';if(opt.sub&&it.s)svg+='<text x="'+(x0+groupW/2).toFixed(1)+'" y="'+(H-pb+28)+'" text-anchor="middle" font-size="9" fill="#9ca3af">'+esc(it.s)+'</text>';}});
   if(opt.line){var pts=opt.line.vals.map(function(v,i){var gx=pl+iw*i+(iw-groupW)/2;return [gx+bw/2,pt+ph*(1-v/lmax)];});
    svg+='<polyline fill="none" stroke="'+opt.line.color+'" stroke-width="2.5" stroke-linejoin="round" points="'+pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' ')+'"/>';
    pts.forEach(function(q,i){svg+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="4" fill="#fff" stroke="'+opt.line.color+'" stroke-width="2.2" data-tip="'+esc((items[i].tips&&items[i].tips[0])||items[i].l)+'"></circle>';});}
  } else {
   items.forEach(function(it,i){var h=ph*(it.v/max),x=pl+iw*i+(iw-bw)/2,y=H-pb-h;
-   svg+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,0).toFixed(1)+'" rx="3" fill="'+(it.c||opt.color||'#9f7cef')+'" data-tip="'+tipOf(it)+'"></rect>';
+   svg+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,0).toFixed(1)+'" rx="3" fill="'+(it.c||opt.color||'#9f7cef')+'" stroke="var(--card)" stroke-width="1" data-tip="'+tipOf(it)+'"></rect>';
    if(i%lblEvery===0){svg+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-pb+15)+'" text-anchor="middle" font-size="10" fill="#4b5563">'+esc(it.l)+'</text>';if(opt.sub&&it.s)svg+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-pb+28)+'" text-anchor="middle" font-size="9" fill="#9ca3af">'+esc(it.s)+'</text>';}});
   if(opt.line){var pts2=opt.line.vals.map(function(v,i){return [pl+iw*i+iw/2,pt+ph*(1-v/lmax)];});
    svg+='<polyline fill="none" stroke="'+opt.line.color+'" stroke-width="2.5" stroke-linejoin="round" points="'+pts2.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' ')+'"/>';
@@ -387,7 +389,7 @@ function bucketNetRange(start,end,locs,gran){var rows=DATA.items.filter(function
  function key(d){if(gran==='day')return d;if(gran==='period'){var f=fiscalOf(d);return f?'P'+f.fy+'-'+pad2(f.p):d.slice(0,7);}return pweek(d).k;}
  var by={};rows.forEach(function(r){var k=key(r.d);by[k]=(by[k]||0)+r.n;});return Object.keys(by).sort().map(function(k){return by[k];});}
 function hourLabel(h){var ap=h<12?'AM':'PM',hh=h%12;if(hh===0)hh=12;return hh+' '+ap;}
-var DOWC={Mon:'#7c3aed',Tue:'#2563eb',Wed:'#14b8a6',Thu:'#f59e0b',Fri:'#ec4899',Sat:'#10b981',Sun:'#ef4444'};
+var DOWC={Mon:'#6d4bd0',Tue:'#8172b5',Wed:'#9f7cef',Thu:'#8b8694',Fri:'#a39ead',Sat:'#bdb8c8',Sun:'#5b5566'};
 function dowColor(d){return DOWC[d]||'#9f7cef';}
 function dowTotals(cols,B,locs){var nm=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],t=[0,0,0,0,0,0,0];cols.forEach(function(c,i){var k=(parseD(c.s).getUTCDay()+6)%7;t[k]+=sum(locs,function(l){return B.v[l][i];});});return nm.map(function(n,k){return {l:n,v:t[k]};});}
 function todTotals(locs){var by={};EMB_HOURS.forEach(function(r){if(r[0]>=S.dr.start&&r[0]<=S.dr.end&&locs.indexOf(r[2])>=0)by[r[1]]=(by[r[1]]||0)+r[3];});var hs=Object.keys(by).map(Number);if(!hs.length)return [];var lo=Math.min.apply(null,hs),hi=Math.max.apply(null,hs),out=[];for(var h=lo;h<=hi;h++)out.push({l:hourLabel(h),v:by[h]||0});return out;}
@@ -418,7 +420,7 @@ function trendCard(F){
  } else if(mode==='daily'){
   var dCmp=SALESDAILY.length?trendCompare(cols):null;
   var dLeg=dCmp?('<div class="tr-leg">'+TREND_SERIES.map(function(se){return '<span class="chd" style="font-size:10.5px;margin-right:4px"><i style="background:'+se.color+'"></i>'+esc(se.label)+'</span>';}).join('')+'<span class="lk"></span> Qty (this)</div>'):'<div class="tr-leg"><i style="background:#9f7cef"></i>Net revenue<span class="lk"></span> Qty</div>';
-  var byDay=dCmp?columns(rev.map(function(v,i){return {l:labels[i],vals:[v,dCmp.pv[i]||0,dCmp.ly[i]||0],tips:[labels[i]+' · This||Net revenue: '+f$(v)+'||'+fN(qty[i])+' items sold',labels[i]+' · Previous period||'+f$(dCmp.pv[i]||0),labels[i]+' · Last year||'+f$(dCmp.ly[i]||0)]};}),f$,{w:1280,h:175,pl:66,series:TREND_SERIES,line:{vals:qty,color:'#f5a623',fmt:fN}}):columns(rev.map(function(v,i){return {l:labels[i],v:v,tip:labels[i]+'||Net revenue: '+f$(v)+'||'+fN(qty[i])+' items sold'};}),f$,{w:1280,h:175,pl:66,color:'#9f7cef',line:{vals:qty,color:'#f5a623',fmt:fN}});
+  var byDay=dCmp?columns(rev.map(function(v,i){return {l:labels[i],vals:[v,dCmp.pv[i]||0,dCmp.ly[i]||0],tips:[labels[i]+' · This||Net revenue: '+f$(v)+'||'+fN(qty[i])+' items sold',labels[i]+' · Previous period||'+f$(dCmp.pv[i]||0),labels[i]+' · Last year||'+f$(dCmp.ly[i]||0)]};}),f$,{w:1280,h:175,pl:66,series:TREND_SERIES,line:{vals:qty,color:'#55505f',fmt:fN}}):columns(rev.map(function(v,i){return {l:labels[i],v:v,tip:labels[i]+'||Net revenue: '+f$(v)+'||'+fN(qty[i])+' items sold'};}),f$,{w:1280,h:175,pl:66,color:'#9f7cef',line:{vals:qty,color:'#55505f',fmt:fN}});
   var dw=dowTotals(cols,B,locs),td=todTotals(locs);
   var dwChart=columns(dw.map(function(x){return {l:x.l,v:x.v,tip:x.l+'||Net revenue: '+f$(x.v)};}),f$,{w:620,h:200,pl:56,color:'#9f7cef'});
   var tdChart=td.length?columns(td.map(function(x){return {l:x.l,v:x.v,tip:x.l+'||Net revenue: '+f$(x.v)};}),f$,{w:620,h:200,pl:56,color:'#9f7cef'}):empty('No hourly data for this range.');
@@ -429,10 +431,10 @@ function trendCard(F){
    var cmp=trendCompare(cols),series=TREND_SERIES;
    var gitems=cols.map(function(c,i){var cur=rev[i],pvv=cmp.pv[i]||0,lyv=cmp.ly[i]||0;return {l:c.l,s:rng[i],vals:[cur,pvv,lyv],tips:[c.l+' · This||Net revenue: '+f$(cur)+(pvv?'||'+signPct(cur,pvv)+' vs previous':'')+(lyv?'||'+signPct(cur,lyv)+' vs last year':''),c.l+' · Previous period||Net revenue: '+f$(pvv),c.l+' · Last year||Net revenue: '+f$(lyv)]};});
    leg='<div class="tr-leg">'+series.map(function(se){return '<span class="chd" style="font-size:10.5px;margin-right:4px"><i style="background:'+se.color+'"></i>'+esc(se.label)+'</span>';}).join('')+(qv?'<span class="lk"></span> Qty (this)':'')+'</div>';
-   chart=columns(gitems,f$,{w:1280,h:185,pl:66,sub:1,series:series,line:qv?{vals:qv,color:'#f5a623',fmt:fN}:null});
+   chart=columns(gitems,f$,{w:1280,h:185,pl:66,sub:1,series:series,line:qv?{vals:qv,color:'#55505f',fmt:fN}:null});
   } else {
    leg='<div class="tr-leg"><i></i>Net revenue'+(qv?'<span class="lk"></span>Qty':'')+(isAvg?' · per day':'')+'</div>';
-   chart=columns(rv.map(function(v,i){return {l:labels[i],s:rng[i],v:v,tip:labels[i]+' · '+rng[i]+' ('+days[i]+' day'+(days[i]>1?'s':'')+')||'+(isAvg?'Net revenue / day: ':'Net revenue: ')+f$(v)+(qv?'||'+(isAvg?'Qty / day: ':'Qty: ')+fN(qv[i]):'')};}),f$,{w:1280,h:185,pl:66,wide:1,color:'#c4b5fd',sub:1,line:qv?{vals:qv,color:'#f5a623',fmt:fN}:null});
+   chart=columns(rv.map(function(v,i){return {l:labels[i],s:rng[i],v:v,tip:labels[i]+' · '+rng[i]+' ('+days[i]+' day'+(days[i]>1?'s':'')+')||'+(isAvg?'Net revenue / day: ':'Net revenue: ')+f$(v)+(qv?'||'+(isAvg?'Qty / day: ':'Qty: ')+fN(qv[i]):'')};}),f$,{w:1280,h:185,pl:66,wide:1,color:'#c4b5fd',sub:1,line:qv?{vals:qv,color:'#55505f',fmt:fN}:null});
   }
   body=leg+chart;
  }
@@ -768,7 +770,7 @@ function vEntree(){
 }
 
 /* ───────── Payment Source (Toast Payments report) ───────── */
-var TYC={'Credit':'#7c3aed','Cash':'#10b981','Other':'#ef7ccf'};
+var TYC={'Credit':'#6d4bd0','Cash':'#8b8694','Other':'#c3b0f2'};
 function tyColor(t){return TYC[t]||PAL[Object.keys(TYC).length%PAL.length];}
 function vPayment(){
  if(!DATA.pays.length)return vPaymentPH();
@@ -805,15 +807,15 @@ function vPayment(){
   +kpi('p','Card Net',f$(cardNet),'card: amt+tip − fees − refunds')
   +'</div>';
  /* ── charts ── */
- var split=[{l:'Card',v:cardRev,c:'#7c3aed'},{l:'Alt Payment',v:altRev,c:'#f5a623'}];
- var bySrc=Array.from(group(pay,function(r){return canonSrc(r.src);})).map(function(e){return {l:e[0],v:sm(e[1],function(r){return r.a+r.t;}),c:e[1][0].grp==='Card'?'#7c3aed':'#f5a623'};}).filter(function(x){return x.v>0;}).sort(function(a,b){return b.v-a.v;});
+ var split=[{l:'Card',v:cardRev,c:'#7c3aed'},{l:'Alt Payment',v:altRev,c:'#55505f'}];
+ var bySrc=Array.from(group(pay,function(r){return canonSrc(r.src);})).map(function(e){return {l:e[0],v:sm(e[1],function(r){return r.a+r.t;}),c:e[1][0].grp==='Card'?'#7c3aed':'#55505f'};}).filter(function(x){return x.v>0;}).sort(function(a,b){return b.v-a.v;});
  var byLoc=Array.from(group(pay,function(r){return r.loc;})).map(function(e){var c=sm(e[1].filter(function(r){return r.grp==='Card';}),function(r){return r.a+r.t;}),al=sm(e[1].filter(function(r){return r.grp==='Alt';}),function(r){return r.a+r.t;});return {l:e[0],vals:[c,al],tips:['Card · '+e[0]+'||'+f$(c),'Alt Payment · '+e[0]+'||'+f$(al)]};}).sort(function(a,b){return (b.vals[0]+b.vals[1])-(a.vals[0]+a.vals[1]);});
  var charts='<div class="gr22"><div class="cc"><h3>Card vs Alt payment split</h3>'+donut(split,f$)+'</div><div class="cc"><h3>Top 10 sources by revenue</h3>'+hbars(bySrc.slice(0,10),f$)+'</div></div>'
-  +'<div class="cc"><div class="cc-h"><h3>Revenue by location</h3></div><div class="tr-leg" style="flex-wrap:wrap"><span class="chd" style="margin-right:8px"><i style="background:#7c3aed"></i>Card</span><span class="chd"><i style="background:#f5a623"></i>Alt Payment</span></div>'+columns(byLoc,f$,{w:1280,h:230,pl:66,series:[{color:'#7c3aed',label:'Card'},{color:'#f5a623',label:'Alt Payment'}],stacked:1})+'</div>';
+  +'<div class="cc"><div class="cc-h"><h3>Revenue by location</h3></div><div class="tr-leg" style="flex-wrap:wrap"><span class="chd" style="margin-right:8px"><i style="background:#7c3aed"></i>Card</span><span class="chd"><i style="background:#55505f"></i>Alt Payment</span></div>'+columns(byLoc,f$,{w:1280,h:230,pl:66,series:[{color:'#7c3aed',label:'Card'},{color:'#55505f',label:'Alt Payment'}],stacked:1})+'</div>';
  /* ── sources table ── */
  var srcRows=Array.from(group(pay,function(r){return canonSrc(r.src);})).map(function(e){var rev=sm(e[1],function(r){return r.a+r.t;}),n=sm(e[1],function(r){return r.n;});return {src:e[0],type:e[1][0].grp,n:n,rev:rev,avg:n?rev/n:0};});
  var tot=sm(srcRows,function(r){return r.rev;});
- var sCols=[{k:'src',l:'Source',a:'l',w:200,f:function(r){return '<span class="chd"><i style="background:'+(r.type==='Card'?'#7c3aed':'#f5a623')+'"></i>'+esc(r.src)+'</span>';}},{k:'type',l:'Type',a:'l',w:130,f:function(r){return '<span class="bdg" style="background:'+(r.type==='Card'?'#ede9fe;color:#6d28d9':'#fdebc8;color:#8a5a00')+'">'+(r.type==='Card'?'Card':'Alt Payment')+'</span>';}},{k:'n',l:'Transactions',f:function(r){return fN(r.n);}},{k:'rev',l:'Revenue',f:function(r){return '<b>'+f$(r.rev)+'</b>';}},{k:'avg',l:'Avg Ticket',f:function(r){return f$2(r.avg);}},{k:'mix',l:'Revenue Mix (%)',v:function(r){return r.rev;},f:function(r){return fP(tot?r.rev/tot:0);}}];
+ var sCols=[{k:'src',l:'Source',a:'l',w:200,f:function(r){return '<span class="chd"><i style="background:'+(r.type==='Card'?'#7c3aed':'#55505f')+'"></i>'+esc(r.src)+'</span>';}},{k:'type',l:'Type',a:'l',w:130,f:function(r){return '<span class="bdg" style="background:'+(r.type==='Card'?'#ede9fe;color:#6d28d9':'#eceaef;color:#55505f')+'">'+(r.type==='Card'?'Card':'Alt Payment')+'</span>';}},{k:'n',l:'Transactions',f:function(r){return fN(r.n);}},{k:'rev',l:'Revenue',f:function(r){return '<b>'+f$(r.rev)+'</b>';}},{k:'avg',l:'Avg Ticket',f:function(r){return f$2(r.avg);}},{k:'mix',l:'Revenue Mix (%)',v:function(r){return r.rev;},f:function(r){return fP(tot?r.rev/tot:0);}}];
  var nb=note('<b>Payout</b> = captured card payments (incl. tip) − refunds − fees. Chargebacks and withholdings are not in the Toast Payments feed (chargebacks shown as —, withholdings $0). Refunds are attributed to the day they were processed. Numbers tie to Toast’s payout within ~0.3% (settlement-timing differences at the period edges).');
  return payoutRow+k+charts+nb+tbl('paysrc','Payment sources · '+fN(srcRows.length)+' shown',sCols,srcRows,{def:{k:'rev',d:'desc'},sfn:function(r){return r.src;},max:200});
 }
@@ -887,7 +889,7 @@ function attPivot(F){
  var rows=Object.keys(items).map(function(k){return items[k];}).filter(function(o){return o.tot>0;});
  if(topN!=='all')rows=rows.slice().sort(function(a,b){return b.tot-a.tot;}).slice(0,+topN);
  var cellV=function(o,l){var c=o.dv[l]||0;return mode==='pct'?(mckDim[l]?c/mckDim[l]:0):c;},ovV=function(o){return mode==='pct'?(mckTot?o.tot/mckTot:0):o.tot;},fmtC=function(v){return v?(mode==='pct'?fP(v,2):fN(v)):'—';};
- var CATC={Main:'#9f7cef',Drink:'#f5a623',Side:'#2ec4b6',Sweet:'#ef7ccf'};
+ var CATC={Main:'#6d4bd0',Drink:'#9f7cef',Side:'#8b8694',Sweet:'#c3b0f2'};
  var cols=[{k:'cat',l:'Category',a:'l',w:86,f:function(r){var c=CATC[r.cat]||'var(--mu)';return '<span class="mb" style="background:'+c+'22;color:'+c+'">'+esc(r.cat)+'</span>';}},
   {k:'item',l:'Item / Modifier',a:'l',w:200,f:function(r){return esc(r.item);}},
   {k:'ov',l:'Overall Rate',v:function(r){return ovV(r);},f:function(r){return '<b>'+fmtC(ovV(r))+'</b>';}}]
@@ -927,7 +929,7 @@ function vAtt(){
  var k='<div class="krow k6">'+kpi('a','Total Main Checks',fN(tot.n),'checks with a main item'+dBadge(tot.n,ptot&&ptot.n))+kpi('g','Highest Attachment',esc(best.name),fP(best.ra,1)+' · '+fN(best.n)+' checks',null,true)+kpi('b','Best Performing Location',esc(bestL.name),fP(bestL.ra,1)+' · '+fN(bestL.n)+' checks',null,true)+kpi('p','Drink Checks',fN(tot.dr),fP(tot.rd,1)+' of main checks'+dBadge(tot.rd,ptot&&ptot.rd,{pp:true}))+kpi('t','Side Checks',fN(tot.sd),fP(tot.rs,1)+' of main checks'+dBadge(tot.rs,ptot&&ptot.rs,{pp:true}))+kpi('pk','Sweet Checks',fN(tot.sw),fP(tot.rw,1)+' of main checks'+dBadge(tot.rw,ptot&&ptot.rw,{pp:true}))+'</div>';
  /* weekly trend (P9W1–W4 = days 1–7, 8–14, 15–21, 22–end) */
  var wk=Array.from(group(ci,function(r){return pweek(r.d).k;})).sort(function(a,b){return a[0]<b[0]?-1:1;}).map(function(e){var a=aggA(e[1]);a.l=pweek(e[1][0].d).l;a.s=weekSub(e[0]);return a;});
- var ATC={Overall:'#9f7cef',Drink:'#2563eb',Side:'#10b981',Sweet:'#f5a623'};
+ var ATC={Overall:'#6d4bd0',Drink:'#9f7cef',Side:'#8b8694',Sweet:'#c3b0f2'};
  var trend='<div class="cc"><div class="cc-h"><h3>Attachment rate trend · weekly</h3></div>'+(wk.length>0?multiLine([{name:'Overall',color:ATC.Overall,vals:wk.map(function(a){return a.ra;})},{name:'Drink',color:ATC.Drink,vals:wk.map(function(a){return a.rd;})},{name:'Side',color:ATC.Side,vals:wk.map(function(a){return a.rs;})},{name:'Sweet',color:ATC.Sweet,vals:wk.map(function(a){return a.rw;})}],wk.map(function(a){return a.l;}),function(v){return fP(v,0);},1280,wk.map(function(a){return a.s;})):empty('No data'))+'</div>';
  var top12=byI.filter(function(x){return x.n>=20;}).sort(function(a,b){return b.ra-a.ra;}).slice(0,12).map(function(x){return {l:x.name,v:x.ra,tip:x.name+'||Overall '+fP(x.ra,1)+' of '+fN(x.n)+' checks||Drink '+fP(x.rd,1)+' · Side '+fP(x.rs,1)+' · Sweet '+fP(x.rw,1)};});
  var locSorted=byL.slice().sort(function(a,b){return b.ra-a.ra;}),locSeries=[{color:ATC.Overall,label:'Overall'},{color:ATC.Drink,label:'Drink'},{color:ATC.Side,label:'Side'},{color:ATC.Sweet,label:'Sweet'}];
