@@ -343,7 +343,7 @@ function tbl(id,title,cols,rows,o){
  var head=cols.map(function(c){return '<th data-a="sort" data-t="'+id+'" data-k="'+c.k+'" data-s="'+(c.a==='l'?'asc':'desc')+'" class="'+(c.a==='l'?'l':'')+'" title="'+esc(c.t||'')+'" style="'+(c.w?'min-width:'+c.w+'px':'')+'">'+c.l+(st&&st.k===c.k?(st.d==='asc'?' ▲':' ▼'):'')+'</th>';}).join('');
  var body=shown.map(function(r){return '<tr>'+cols.map(function(c){return '<td class="'+(c.a==='l'?'l':'')+'">'+(c.f?c.f(r):esc(r[c.k]))+'</td>';}).join('')+'</tr>';}).join('');
  var tools=(o.sfn?'<input class="srch" id="q_'+id+'" data-a="q" data-t="'+id+'" placeholder="Search…" value="'+esc(S.q[id]||'')+'">':'')+(o.extra||'');
- return '<div class="tw"><div class="th2"><h3>'+title+'</h3><div class="tools">'+tools+'</div></div><div class="tscroll"><table><thead><tr>'+head+'</tr></thead><tbody>'+(body||'<tr><td colspan="'+cols.length+'" class="l" style="color:var(--muted);padding:20px">No rows match.</td></tr>')+'</tbody>'+(o.foot?'<tfoot><tr>'+o.foot+'</tr></tfoot>':'')+'</table></div>'+(data.length>max?'<div class="ks" style="padding:8px 14px">Showing top '+max+' of '+fN(data.length)+' rows'+(o.csv?' — use Download CSV for the full set':'')+'.</div>':'')+'</div>';
+ return '<div class="tw"><div class="th2"><h3>'+title+'</h3><div class="tools">'+tools+'</div></div><div class="tscroll"><table'+(o.fit?' style="width:auto"':'')+'><thead><tr>'+head+'</tr></thead><tbody>'+(body||'<tr><td colspan="'+cols.length+'" class="l" style="color:var(--muted);padding:20px">No rows match.</td></tr>')+'</tbody>'+(o.foot?'<tfoot><tr>'+o.foot+'</tr></tfoot>':'')+'</table></div>'+(data.length>max?'<div class="ks" style="padding:8px 14px">Showing top '+max+' of '+fN(data.length)+' rows'+(o.csv?' — use Download CSV for the full set':'')+'.</div>':'')+'</div>';
 }
 function csvDownload(name,heads,rows){
  var esc2=function(v){v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
@@ -611,10 +611,10 @@ function vLocMods(head){
  var grps=Array.from(new Set(mrows.map(function(r){return r.gn;}))).sort(),showAmt=T('lcMG','pct')==='amt';
  var gRows=grps.map(function(gnm){var o={grp:gnm};locs.forEach(function(l){var lr=byL.get(l);o[l]=val(lr.filter(function(r){return r.gn===gnm;}));o['t_'+l]=val(lr);});return o;});
  var gCols=[{k:'grp',l:'Modifier group',a:'l',w:180,f:function(r){return esc(r.grp);}}].concat(locs.map(function(l){return {k:l,l:'<span style="color:'+locShade(l)+'">'+esc(l)+'</span>',f:function(r){return showAmt?fv(r[l]):fP(r['t_'+l]?r[l]/r['t_'+l]:0);}};}));
- var gTbl=tbl('lcmg','Modifier group mix by location ('+(showAmt?'qty':'% of qty')+')',gCols,gRows,{extra:tgl('lcMG',[['pct','%'],['amt','Qty']],showAmt?'amt':'pct')});
+ var gTbl=tbl('lcmg','Modifier group mix by location ('+(showAmt?'qty':'% of qty')+')',gCols,gRows,{extra:tgl('lcMG',[['pct','%'],['amt','Qty']],showAmt?'amt':'pct'),fit:1});
  var mods=Array.from(group(mrows,function(r){return r.m+'||'+r.gn;})).map(function(e){var o={mod:e[1][0].m,grp:e[1][0].gn},bl=group(e[1],function(r){return r.loc;});locs.forEach(function(l){o[l]=bl.has(l)?val(bl.get(l)):0;});o.avg=sum(locs,function(l){return o[l];})/locs.length;return o;});
  var mCols=[{k:'mod',l:'Modifier',a:'l',w:180,f:function(r){return esc(r.mod);}},{k:'grp',l:'Group',a:'l',w:140,f:function(r){return esc(r.grp);}}].concat(locs.map(function(l){return {k:l,l:'<span style="color:'+locShade(l)+'">'+esc(l)+'</span>',f:function(r){return r[l]?fv(r[l]):'—';}};})).concat([{k:'avg',l:'Avg / location',f:function(r){return '<b>'+fv(r.avg)+'</b>';}}]);
- var mTbl=tbl('lcmod','Modifier comparison · Picks',mCols,mods,{def:{k:'avg',d:'desc'},sfn:function(r){return r.mod+' '+r.grp;},max:300});
+ var mTbl=tbl('lcmod','Modifier comparison · Picks',mCols,mods,{def:{k:'avg',d:'desc'},sfn:function(r){return r.mod+' '+r.grp;},max:300,fit:1});
  return head+cards+chart+topModsByLoc(mrows,locs)+gTbl+mTbl;
 }
 
@@ -654,7 +654,7 @@ function vChanMods(head){
  var cards='<div class="loc-grid">'+chans.map(function(c){var a=byC.get(c),picks=sum(a,function(r){return r.q;});return '<div class="kc" style="border-left-color:'+chanColor(c)+'"><div class="kl">'+esc(c)+'</div><div class="kv" style="font-size:19px">'+fN(picks)+'</div><div class="ks">picks · '+fP(tq?picks/tq:0)+' mix</div></div>';}).join('')+'</div>';
  var clRows=chans.map(function(c){var cr=byC.get(c),bl=group(cr,function(r){return r.loc;});var o={chan:c,tot:val(cr)};locs.forEach(function(l){o[l]=bl.has(l)?val(bl.get(l)):0;});return o;});
  var clCols=[{k:'chan',l:'Channel',a:'l',w:160,f:function(r){return chanChip(r.chan);}},{k:'tot',l:'Total',f:function(r){return '<b>'+fv(r.tot)+'</b>';}}].concat(locs.map(function(l){return {k:l,l:esc(l),f:function(r){return r[l]?fv(r[l]):'—';}};}));
- var clTbl=tbl('chmloc','Channel × location (picks)',clCols,clRows,{def:{k:'tot',d:'desc'}});
+ var clTbl=tbl('chmloc','Channel × location (picks)',clCols,clRows,{def:{k:'tot',d:'desc'},fit:1});
  var clData=locs.map(function(l){var lr=mrows.filter(function(r){return r.loc===l;}),totl=val(lr);return {l:l,vals:chans.map(function(c){return val(lr.filter(function(r){return chanOf(r.menu)===c;}));}),tips:chans.map(function(c){var v=val(lr.filter(function(r){return chanOf(r.menu)===c;}));return c+' · '+l+'||'+fv(v)+(totl?'||'+fP(v/totl,1)+' of location':'');})};});
  var clSeries=chans.map(function(c){return {color:chanColor(c),label:c};});
  var clLeg='<div class="tr-leg" style="flex-wrap:wrap">'+clSeries.map(function(se){return '<span class="chd" style="font-size:10.5px;margin-right:6px"><i style="background:'+se.color+'"></i>'+esc(se.label)+'</span>';}).join('')+'</div>';
@@ -664,7 +664,7 @@ function vChanMods(head){
   return '<div class="cc" style="border-top:3px solid '+chanColor(c)+'"><h3>'+esc(c)+' · '+(tb==='top'?'top':'bottom')+' modifiers</h3>'+hbars(it,fN)+'</div>';}).join('')+'</div>';
  var mods=Array.from(group(mrows,function(r){return r.m+'||'+r.gn;})).map(function(e){var o={mod:e[1][0].m,grp:e[1][0].gn,total:val(e[1])};chans.forEach(function(c){o[c]=val(e[1].filter(function(r){return chanOf(r.menu)===c;}));});return o;});
  var mCols=[{k:'mod',l:'Modifier',a:'l',w:180,f:function(r){return esc(r.mod);}},{k:'grp',l:'Group',a:'l',w:130,f:function(r){return esc(r.grp);}},{k:'total',l:'Total',f:function(r){return '<b>'+fv(r.total)+'</b>';}}].concat(chans.map(function(c){return {k:c,l:'<span style="color:'+chanColor(c)+'">'+esc(c)+'</span>',f:function(r){return r[c]?fv(r[c]):'—';}};}));
- var mTbl=tbl('chmod','Modifier by channel (picks)',mCols,mods,{def:{k:'total',d:'desc'},sfn:function(r){return r.mod+' '+r.grp;},max:300});
+ var mTbl=tbl('chmod','Modifier by channel (picks)',mCols,mods,{def:{k:'total',d:'desc'},sfn:function(r){return r.mod+' '+r.grp;},max:300,fit:1});
  return head+cards+clChart+clTbl+per+mTbl;
 }
 
